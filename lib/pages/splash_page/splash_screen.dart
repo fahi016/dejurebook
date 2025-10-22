@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:dejurebook/pages/on_boarding/on_boarding_screen_1.dart';
+import 'package:dejurebook/pages/on_boarding/on_boarding_page.dart';
 import 'package:flutter/material.dart';
 import 'package:dejurebook/constants/app_colors.dart';
 
@@ -19,7 +19,7 @@ class _SplashScreenState extends State<SplashScreen> {
     Timer(const Duration(seconds: 2), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const OnBoardingScreen1()),
+        MaterialPageRoute(builder: (context) => const OnBoardingPage()),
       );
     });
   }

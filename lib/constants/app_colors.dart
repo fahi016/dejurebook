@@ -12,7 +12,7 @@ class AppColors {
   static const ColorScheme lightColorScheme = ColorScheme.light(
     primary: black,
     onPrimary: white,
-    secondary: black,
+    secondary: Colors.grey,
     onSecondary: white,
     surface: white,
     onSurface: black,
