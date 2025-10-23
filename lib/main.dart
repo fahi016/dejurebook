@@ -23,7 +23,8 @@ class SimpleBlocObserver extends BlocObserver {
   @override
   void onTransition(Bloc bloc, Transition transition) {
     super.onTransition(bloc, transition);
-    debugPrint('🔄 Transition: ${transition.currentState.runtimeType} → ${transition.nextState.runtimeType}');
+    debugPrint(
+        '🔄 Transition: ${transition.currentState.runtimeType} → ${transition.nextState.runtimeType}');
   }
 
   @override
@@ -52,10 +53,10 @@ class MyApp extends StatelessWidget {
           lazy: true, // Only creates when needed
         ),
         BlocProvider<UserSelectionBloc>(
-        create: (context) => UserSelectionBloc(),
-        lazy: true, // Only creates when needed
+          create: (context) => UserSelectionBloc(),
+          lazy: true, // Only creates when needed
         ),
-        
+
         // Add more BLoCs here as your app grows
         // Example:
         // BlocProvider<AuthBloc>(
@@ -79,7 +80,8 @@ class MyApp extends StatelessWidget {
         darkTheme: ThemeData(
           colorScheme: AppColors.darkColorScheme,
           useMaterial3: true,
-          textTheme: GoogleFonts.montserratTextTheme(ThemeData.dark().textTheme),
+          textTheme:
+              GoogleFonts.montserratTextTheme(ThemeData.dark().textTheme),
         ),
         home: const SplashScreen(),
       ),

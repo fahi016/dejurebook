@@ -35,12 +35,6 @@ class UserTypeCard extends StatelessWidget {
                     ? const Color(0xFF4A4A4A)
                     : const Color(0xFF3B3B3B),
                 borderRadius: BorderRadius.circular(18),
-                border: isSelected
-                    ? Border.all(
-                        color: Theme.of(context).colorScheme.primary,
-                        width: 2,
-                      )
-                    : null,
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.25),

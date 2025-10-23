@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dejurebook/pages/user_selection/bloc/user_selection_bloc.dart';
 import 'package:dejurebook/pages/user_selection/bloc/user_selection_event.dart';
 import 'package:dejurebook/pages/user_selection/bloc/user_selection_state.dart';
+import 'package:dejurebook/pages/consumer/consumer_home_page.dart';
 import 'package:dejurebook/widgets/user_type_card.dart';
 import 'package:dejurebook/widgets/custom_button.dart';
 
@@ -26,19 +27,17 @@ class UserSelectionView extends StatelessWidget {
     return BlocConsumer<UserSelectionBloc, UserSelectionState>(
       listener: (context, state) {
         if (state.isCompleted) {
-          // TODO: Navigate to next screen
-          // You can also pass the selected user type to the next screen
+          // Navigate based on selected user type
+          if (state.selectedUserType == UserType.consumer) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const ConsumerHomePage(),
+              ),
+            );
+          }
+          // TODO: Add navigation for other user types (lawyer, lawStudent, other)
           print('User type selected: ${state.selectedUserType}');
-
-          // Example navigation:
-          // Navigator.push(
-          //   context,
-          //   MaterialPageRoute(
-          //     builder: (context) => NextScreen(
-          //       userType: state.selectedUserType!,
-          //     ),
-          //   ),
-          // );
         }
       },
       builder: (context, state) {
@@ -126,7 +125,7 @@ class UserSelectionView extends StatelessWidget {
                               .read<UserSelectionBloc>()
                               .add(const ContinueEvent());
                         }
-                      : () {}, // Disabled if no selection
+                      : null, // Disabled if no selection
                 ),
 
                 const SizedBox(height: 30),
