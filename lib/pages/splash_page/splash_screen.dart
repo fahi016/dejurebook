@@ -1,33 +1,24 @@
-import 'dart:async';
 import 'package:dejurebook/pages/on_boarding/on_boarding_page.dart';
 import 'package:flutter/material.dart';
 import 'package:dejurebook/constants/app_colors.dart';
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
-}
-
-class _SplashScreenState extends State<SplashScreen> {
-  @override
-  void initState() {
-    super.initState();
-
-    // Wait for 2 seconds, then navigate
-    Timer(const Duration(seconds: 2), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const OnBoardingPage()),
-      );
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
+    // Navigate after build completes
+    Future.delayed(const Duration(seconds: 2), () {
+      if (context.mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const OnBoardingPage()),
+        );
+      }
+    });
+
     return Scaffold(
-      backgroundColor: AppColors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: Center(
         child: Image.asset(
           'assets/logos/main_logo.png',

@@ -1,6 +1,10 @@
-import 'package:dejurebook/pages/login/login_screen.dart';
+import 'package:dejurebook/pages/auth/signup_screen.dart';
+import 'package:dejurebook/pages/on_boarding/bloc/on_boarding_bloc.dart';
+import 'package:dejurebook/pages/on_boarding/bloc/on_boarding_event.dart';
+import 'package:dejurebook/pages/on_boarding/bloc/on_boarding_state.dart';
+import 'package:dejurebook/widgets/on_boarding_content.dart';
 import 'package:flutter/material.dart';
-import 'package:dejurebook/constants/app_colors.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dejurebook/widgets/custom_button.dart';
 
 class OnBoardingPage extends StatefulWidget {
@@ -12,7 +16,6 @@ class OnBoardingPage extends StatefulWidget {
 
 class _OnBoardingPageState extends State<OnBoardingPage> {
   final PageController _pageController = PageController();
-  int _currentPage = 0;
 
   @override
   void dispose() {
@@ -20,95 +23,105 @@ class _OnBoardingPageState extends State<OnBoardingPage> {
     super.dispose();
   }
 
-  void _onPageChanged(int index) {
-    setState(() {
-      _currentPage = index;
-    });
-  }
-
-  void _nextPage() {
-    if (_currentPage < 2) {
-      _pageController.nextPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
-    } else {
-      // Navigate to login screen
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) =>
-              const LoginScreen(), // Replace with your login screen
-        ),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: PageView(
-                controller: _pageController,
-                onPageChanged: _onPageChanged,
-                children: const [
-                  OnBoardingContent(
-                    imagePath: 'assets/images/on_boarding_image_1.png',
-                    title: 'Legal Scroll Zone',
-                    description:
-                        'Watch legal short form content – learn the law like never before.',
-                  ),
-                  OnBoardingContent(
-                    imagePath: 'assets/images/on_boarding_image_2.png',
-                    title: 'AI Legal Chat Assistant',
-                    description:
-                        'Ask anything. Understand your rights in your language.',
-                  ),
-                  OnBoardingContent(
-                    imagePath: 'assets/images/on_boarding_image_3.png',
-                    title: 'Earn by Sharing Knowledge',
-                    description:
-                        'Create legal content. Gain followers. Earn money.',
-                  ),
-                ],
-              ),
+    return BlocConsumer<OnBoardingBloc, OnBoardingState>(
+      listener: (context, state) {
+        // Navigate when onboarding is completed
+        if (state.isCompleted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const SignUpScreen(),
             ),
+          );
+        }
+      },
+      builder: (context, state) {
+        // Sync PageController with BLoC state
+        if (_pageController.hasClients && 
+            _pageController.page?.round() != state.currentPage) {
+          _pageController.animateToPage(
+            state.currentPage,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        }
 
-            // Dot indicator
-            Padding(
-              padding: const EdgeInsets.only(bottom: 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(
-                  3,
-                  (index) => _buildDot(index == _currentPage),
+        return Scaffold(
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          body: SafeArea(
+            child: Column(
+              children: [
+                Expanded(
+                  child: PageView(
+                    controller: _pageController,
+                    onPageChanged: (index) {
+                      context
+                          .read<OnBoardingBloc>()
+                          .add(PageChangedEvent(index));
+                    },
+                    children: const [
+                      OnBoardingContent(
+                        imagePath: 'assets/images/on_boarding_image_1.png',
+                        title: 'Legal Scroll Zone',
+                        description:
+                            'Watch legal short form content – learn the law like never before.',
+                      ),
+                      OnBoardingContent(
+                        imagePath: 'assets/images/on_boarding_image_2.png',
+                        title: 'AI Legal Chat Assistant',
+                        description:
+                            'Ask anything. Understand your rights in your language.',
+                      ),
+                      OnBoardingContent(
+                        imagePath: 'assets/images/on_boarding_image_3.png',
+                        title: 'Earn by Sharing Knowledge',
+                        description:
+                            'Create legal content. Gain followers. Earn money.',
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ),
 
-            // Button
-            Padding(
-              padding: const EdgeInsets.only(bottom: 40),
-              child: CustomButton(
-                text: _currentPage == 0 ? "Get Started" : "Continue",
-                onPressed: _nextPage,
-              ),
+                // Dot indicator
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 20),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(
+                      3,
+                      (index) => _buildDot(
+                        context,
+                        index == state.currentPage,
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Button
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 40),
+                  child: CustomButton(
+                    text: state.currentPage == 0 ? "Get Started" : "Continue",
+                    onPressed: () {
+                      context.read<OnBoardingBloc>().add(const NextPageEvent());
+                    },
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildDot(bool isActive) {
+  Widget _buildDot(BuildContext context, bool isActive) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 4),
-      width: isActive ? 15 : 15,
-      height: isActive ? 6 : 6,
+      width: 15,
+      height: 6,
       decoration: BoxDecoration(
         color: isActive
             ? Theme.of(context).colorScheme.primary
@@ -116,71 +129,6 @@ class _OnBoardingPageState extends State<OnBoardingPage> {
         shape: BoxShape.rectangle,
         borderRadius: BorderRadius.circular(10),
       ),
-    );
-  }
-}
-
-class OnBoardingContent extends StatelessWidget {
-  final String imagePath;
-  final String title;
-  final String description;
-
-  const OnBoardingContent({
-    super.key,
-    required this.imagePath,
-    required this.title,
-    required this.description,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        // Logo
-        Image.asset(
-          'assets/logos/main_logo.png',
-          height: 60,
-          fit: BoxFit.contain,
-        ),
-        const SizedBox(height: 30),
-
-        // Center Image
-        Image.asset(
-          imagePath,
-          width: 375,
-          height: 320,
-          fit: BoxFit.contain,
-        ),
-        const SizedBox(height: 40),
-
-        // Title
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w900,
-            color: Colors.black,
-          ),
-        ),
-
-        const SizedBox(height: 8),
-
-        // Subtitle
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 30),
-          child: Text(
-            description,
-            style: const TextStyle(
-              fontSize: 14,
-              color: Colors.black,
-              height: 1.4,
-              fontWeight: FontWeight.bold,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ),
-      ],
     );
   }
 }
