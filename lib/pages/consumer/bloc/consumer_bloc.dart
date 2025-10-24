@@ -9,43 +9,50 @@ class ConsumerBloc extends Bloc<ConsumerEvent, ConsumerState> {
     on<LoadHomeDataEvent>(_onLoadHomeData);
     on<LoadAwazDataEvent>(_onLoadAwazData);
     on<LoadReelsDataEvent>(_onLoadReelsData);
+    on<ToggleVoiceListeningEvent>(_onToggleVoiceListening);
   }
 
   void _onChangeNav(ChangeNavEvent event, Emitter<ConsumerState> emit) {
     emit(state.copyWith(currentNavIndex: event.navIndex));
   }
 
-  void _onChangeContentTab(ChangeContentTabEvent event, Emitter<ConsumerState> emit) {
+  void _onChangeContentTab(
+      ChangeContentTabEvent event, Emitter<ConsumerState> emit) {
     emit(state.copyWith(currentContentTabIndex: event.tabIndex));
   }
 
-  void _onLoadHomeData(LoadHomeDataEvent event, Emitter<ConsumerState> emit) {
+  Future<void> _onLoadHomeData(
+      LoadHomeDataEvent event, Emitter<ConsumerState> emit) async {
     emit(state.copyWith(isLoading: true, error: null));
-    
-    Future.delayed(const Duration(seconds: 1), () {
-      if (!isClosed) {
-        emit(state.copyWith(isLoading: false));
-      }
-    });
+
+    await Future.delayed(const Duration(seconds: 1));
+    if (!isClosed) {
+      emit(state.copyWith(isLoading: false));
+    }
   }
 
-  void _onLoadAwazData(LoadAwazDataEvent event, Emitter<ConsumerState> emit) {
+  Future<void> _onLoadAwazData(
+      LoadAwazDataEvent event, Emitter<ConsumerState> emit) async {
     emit(state.copyWith(isLoading: true, error: null));
-    
-    Future.delayed(const Duration(seconds: 1), () {
-      if (!isClosed) {
-        emit(state.copyWith(isLoading: false));
-      }
-    });
+
+    await Future.delayed(const Duration(seconds: 1));
+    if (!isClosed) {
+      emit(state.copyWith(isLoading: false));
+    }
   }
 
-  void _onLoadReelsData(LoadReelsDataEvent event, Emitter<ConsumerState> emit) {
+  Future<void> _onLoadReelsData(
+      LoadReelsDataEvent event, Emitter<ConsumerState> emit) async {
     emit(state.copyWith(isLoading: true, error: null));
-    
-    Future.delayed(const Duration(seconds: 1), () {
-      if (!isClosed) {
-        emit(state.copyWith(isLoading: false));
-      }
-    });
+
+    await Future.delayed(const Duration(seconds: 1));
+    if (!isClosed) {
+      emit(state.copyWith(isLoading: false));
+    }
+  }
+
+  void _onToggleVoiceListening(
+      ToggleVoiceListeningEvent event, Emitter<ConsumerState> emit) {
+    emit(state.copyWith(isVoiceListening: !state.isVoiceListening));
   }
 }

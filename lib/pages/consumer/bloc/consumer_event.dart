@@ -36,3 +36,7 @@ class LoadAwazDataEvent extends ConsumerEvent {
 class LoadReelsDataEvent extends ConsumerEvent {
   const LoadReelsDataEvent();
 }
+
+class ToggleVoiceListeningEvent extends ConsumerEvent {
+  const ToggleVoiceListeningEvent();
+}

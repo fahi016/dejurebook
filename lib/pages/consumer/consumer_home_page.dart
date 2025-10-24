@@ -1,3 +1,5 @@
+import 'package:dejurebook/pages/messages/message_screen.dart';
+import 'package:dejurebook/pages/settings/settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
@@ -30,7 +32,7 @@ class ConsumerHomeView extends StatelessWidget {
       builder: (context, state) {
         return Scaffold(
           backgroundColor: AppColors.white,
-          appBar: _buildAppBar(),
+          appBar: _buildAppBar(context),
           body: _buildBody(state),
           bottomNavigationBar: _buildBottomNav(context, state),
         );
@@ -38,44 +40,78 @@ class ConsumerHomeView extends StatelessWidget {
     );
   }
 
-  PreferredSizeWidget _buildAppBar() {
+  PreferredSizeWidget _buildAppBar(BuildContext context) {
     return AppBar(
       backgroundColor: AppColors.white,
       elevation: 0,
       automaticallyImplyLeading: false,
+      centerTitle: true,
       title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          IconButton(
-            onPressed: () {},
-            icon: Image.asset(
-              'assets/images/notification_image.png',
-              width: 24,
-              height: 24,
-            ),
+          // 🔹 Left side (Notification + Message)
+          Row(
+            children: [
+              IconButton(
+                onPressed: () {},
+                icon: Image.asset(
+                  'assets/images/notification_image.png',
+                  width: 24,
+                  height: 24,
+                ),
+              ),
+              IconButton(
+                onPressed: () {
+                  Navigator.of(context).push(
+                      MaterialPageRoute(builder: (context) => MessageScreen()));
+                },
+                icon: Image.asset(
+                  'assets/images/chat.png',
+                  width: 24,
+                  height: 24,
+                ),
+              ),
+            ],
           ),
-          Container(
-            width: 180,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade200,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: const Text(
-              'deJure Premium',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.green,
-                fontSize: 14,
-                fontWeight: FontWeight.w800,
+
+          // 🔹 Center (deJure Premium)
+          Expanded(
+            child: Center(
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade200,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Text(
+                  'deJure Premium',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.green,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
               ),
             ),
           ),
+          SizedBox(
+            width: 40,
+          ),
+
+          // 🔹 Right side (Profile)
           GestureDetector(
-            onTap: () {},
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const SettingsScreen(),
+                ),
+              );
+            },
             child: Container(
-              width: 40,
-              height: 40,
+              width: 36,
+              height: 36,
               decoration: const BoxDecoration(
                 shape: BoxShape.circle,
               ),
@@ -85,7 +121,7 @@ class ConsumerHomeView extends StatelessWidget {
                 fit: BoxFit.cover,
               ),
             ),
-          )
+          ),
         ],
       ),
     );

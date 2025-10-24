@@ -1,3 +1,4 @@
+import 'package:dejurebook/pages/messages/bloc/message_bloc.dart';
 import 'package:dejurebook/pages/splash_page/splash_screen.dart';
 import 'package:dejurebook/pages/on_boarding/bloc/on_boarding_bloc.dart';
 import 'package:dejurebook/constants/app_colors.dart';
@@ -55,6 +56,9 @@ class MyApp extends StatelessWidget {
         BlocProvider<UserSelectionBloc>(
           create: (context) => UserSelectionBloc(),
           lazy: true, // Only creates when needed
+        ),
+        BlocProvider<MessageBloc>(
+          create: (_) => MessageBloc(),
         ),
 
         // Add more BLoCs here as your app grows
