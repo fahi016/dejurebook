@@ -7,6 +7,9 @@ class ConsumerState extends Equatable {
   final bool isLoading;
   final String? error;
   final bool isVoiceListening; // For Awaz voice listening state
+  final List<ReelItem> reels; // For Reels content
+  final int currentReelIndex; // Current visible reel
+  final bool isVideoPlaying; // Video playback state
 
   const ConsumerState({
     this.currentNavIndex = 0,
@@ -14,6 +17,9 @@ class ConsumerState extends Equatable {
     this.isLoading = false,
     this.error,
     this.isVoiceListening = false,
+    this.reels = const [],
+    this.currentReelIndex = 0,
+    this.isVideoPlaying = false,
   });
 
   ConsumerState copyWith({
@@ -22,6 +28,9 @@ class ConsumerState extends Equatable {
     bool? isLoading,
     String? error,
     bool? isVoiceListening,
+    List<ReelItem>? reels,
+    int? currentReelIndex,
+    bool? isVideoPlaying,
   }) {
     return ConsumerState(
       currentNavIndex: currentNavIndex ?? this.currentNavIndex,
@@ -30,6 +39,9 @@ class ConsumerState extends Equatable {
       isLoading: isLoading ?? this.isLoading,
       error: error ?? this.error,
       isVoiceListening: isVoiceListening ?? this.isVoiceListening,
+      reels: reels ?? this.reels,
+      currentReelIndex: currentReelIndex ?? this.currentReelIndex,
+      isVideoPlaying: isVideoPlaying ?? this.isVideoPlaying,
     );
   }
 
@@ -39,6 +51,41 @@ class ConsumerState extends Equatable {
         currentContentTabIndex,
         isLoading,
         error,
-        isVoiceListening
+        isVoiceListening,
+        reels,
+        currentReelIndex,
+        isVideoPlaying,
+      ];
+}
+
+// Reel item model
+class ReelItem extends Equatable {
+  final String id;
+  final String videoUrl;
+  final String username;
+  final String caption;
+  final int likes;
+  final int comments;
+  final String profileImageUrl;
+
+  const ReelItem({
+    required this.id,
+    required this.videoUrl,
+    required this.username,
+    required this.caption,
+    required this.likes,
+    required this.comments,
+    required this.profileImageUrl,
+  });
+
+  @override
+  List<Object?> get props => [
+        id,
+        videoUrl,
+        username,
+        caption,
+        likes,
+        comments,
+        profileImageUrl,
       ];
 }

@@ -1,16 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dejurebook/constants/app_colors.dart';
-import 'package:dejurebook/pages/consumer/bloc/consumer_bloc.dart';
-import 'package:dejurebook/pages/consumer/bloc/consumer_event.dart';
-import 'package:dejurebook/pages/consumer/bloc/consumer_state.dart';
+import 'package:dejurebook/pages/consumer_reels/bloc/consumer_reels_bloc.dart';
+import 'package:dejurebook/pages/consumer_reels/bloc/consumer_reels_event.dart';
+import 'package:dejurebook/pages/consumer_reels/bloc/consumer_reels_state.dart';
 
-class ReelsContent extends StatelessWidget {
-  const ReelsContent({super.key});
+class ConsumerReelsPage extends StatelessWidget {
+  const ConsumerReelsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ConsumerBloc, ConsumerState>(
+    return BlocProvider(
+      create: (context) => ConsumerReelsBloc()..add(const LoadReelsDataEvent()),
+      child: const ConsumerReelsView(),
+    );
+  }
+}
+
+class ConsumerReelsView extends StatelessWidget {
+  const ConsumerReelsView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<ConsumerReelsBloc, ConsumerReelsState>(
       builder: (context, state) {
         if (state.reels.isEmpty) {
           return const Center(
@@ -26,7 +38,7 @@ class ReelsContent extends StatelessWidget {
             return _buildReelItem(context, reel);
           },
           onPageChanged: (index) {
-            context.read<ConsumerBloc>().add(ChangeReelEvent(index));
+            context.read<ConsumerReelsBloc>().add(ChangeReelEvent(index));
           },
         );
       },
@@ -120,7 +132,9 @@ class ReelsContent extends StatelessWidget {
                   icon: Icons.favorite,
                   label: 'Like',
                   onTap: () {
-                    context.read<ConsumerBloc>().add(LikeReelEvent(reel.id));
+                    context
+                        .read<ConsumerReelsBloc>()
+                        .add(LikeReelEvent(reel.id));
                   },
                 ),
                 const SizedBox(height: 24),
@@ -129,7 +143,9 @@ class ReelsContent extends StatelessWidget {
                   icon: Icons.comment_outlined,
                   label: '${reel.comments}',
                   onTap: () {
-                    context.read<ConsumerBloc>().add(CommentReelEvent(reel.id));
+                    context
+                        .read<ConsumerReelsBloc>()
+                        .add(CommentReelEvent(reel.id));
                   },
                 ),
                 const SizedBox(height: 24),
@@ -138,7 +154,9 @@ class ReelsContent extends StatelessWidget {
                   icon: Icons.share_outlined,
                   label: 'Share',
                   onTap: () {
-                    context.read<ConsumerBloc>().add(ShareReelEvent(reel.id));
+                    context
+                        .read<ConsumerReelsBloc>()
+                        .add(ShareReelEvent(reel.id));
                   },
                 ),
               ],
@@ -186,7 +204,7 @@ class ReelsContent extends StatelessWidget {
                         child: GestureDetector(
                           onTap: () {
                             context
-                                .read<ConsumerBloc>()
+                                .read<ConsumerReelsBloc>()
                                 .add(FollowUserEvent(reel.username));
                           },
                           child: Container(

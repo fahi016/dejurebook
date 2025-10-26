@@ -1,5 +1,5 @@
 import 'package:dejurebook/pages/messages/message_screen.dart';
-import 'package:dejurebook/pages/settings/settings_screen.dart';
+import 'package:dejurebook/pages/profile/profile_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
@@ -105,7 +105,7 @@ class ConsumerHomeView extends StatelessWidget {
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (context) => const SettingsScreen(),
+                  builder: (context) => const ProfilePage(),
                 ),
               );
             },

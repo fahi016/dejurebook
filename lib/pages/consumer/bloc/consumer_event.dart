@@ -40,3 +40,48 @@ class LoadReelsDataEvent extends ConsumerEvent {
 class ToggleVoiceListeningEvent extends ConsumerEvent {
   const ToggleVoiceListeningEvent();
 }
+
+class LikeReelEvent extends ConsumerEvent {
+  final String reelId;
+
+  const LikeReelEvent(this.reelId);
+
+  @override
+  List<Object> get props => [reelId];
+}
+
+class CommentReelEvent extends ConsumerEvent {
+  final String reelId;
+
+  const CommentReelEvent(this.reelId);
+
+  @override
+  List<Object> get props => [reelId];
+}
+
+class ShareReelEvent extends ConsumerEvent {
+  final String reelId;
+
+  const ShareReelEvent(this.reelId);
+
+  @override
+  List<Object> get props => [reelId];
+}
+
+class FollowUserEvent extends ConsumerEvent {
+  final String username;
+
+  const FollowUserEvent(this.username);
+
+  @override
+  List<Object> get props => [username];
+}
+
+class ChangeReelEvent extends ConsumerEvent {
+  final int reelIndex;
+
+  const ChangeReelEvent(this.reelIndex);
+
+  @override
+  List<Object> get props => [reelIndex];
+}
