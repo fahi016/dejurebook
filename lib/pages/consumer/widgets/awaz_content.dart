@@ -2,6 +2,7 @@
 import 'package:dejurebook/pages/consumer/widgets/animated_waveform.dart';
 import 'package:dejurebook/constants/app_colors.dart';
 import 'package:dejurebook/constants/responsive_utils.dart';
+import 'package:dejurebook/pages/ai_chat/ai_chat_page.dart';
 import 'package:flutter/material.dart';
 
 class AwazContent extends StatefulWidget {
@@ -297,6 +298,37 @@ class _AwazContentState extends State<AwazContent>
                               ],
                             ),
                     ),
+
+                    // "read conversation here" text link
+                    if (_isListening)
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => const AiChatPage(
+                                sessionId: 'default_session',
+                              ),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          margin: EdgeInsets.only(
+                            top: ResponsiveUtils.getResponsiveSpacing(
+                                context, 20),
+                          ),
+                          child: Text(
+                            'read conversation here',
+                            style: TextStyle(
+                              fontSize: ResponsiveUtils.getResponsiveFontSize(
+                                  context, 16),
+                              color: AppColors.black,
+                              fontWeight: FontWeight.w500,
+                              decoration: TextDecoration.underline,
+                              decorationColor: AppColors.black,
+                            ),
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ),
