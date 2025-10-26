@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:dejurebook/constants/app_colors.dart';
+import 'package:dejurebook/constants/responsive_utils.dart';
 
 class AuthButton extends StatelessWidget {
   final String text;
@@ -22,30 +24,33 @@ class AuthButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
-      height: 56,
+      height: ResponsiveUtils.getResponsiveFontSize(context, 56),
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: backgroundColor ?? const Color(0xFF3C3C3C),
-          foregroundColor: textColor ?? Colors.white,
+          backgroundColor: backgroundColor ?? AppColors.darkGrey
+        ,
+          foregroundColor: textColor ?? AppColors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          elevation: 0,
+          elevation: 2,
+          shadowColor: AppColors.black.withOpacity(0.1),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               icon,
-              size: iconSize ?? 24,
-              color: Colors.white,
+              size: iconSize ??
+                  ResponsiveUtils.getResponsiveFontSize(context, 24),
+              color: AppColors.white,
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: ResponsiveUtils.getResponsiveSpacing(context, 12)),
             Text(
               text,
-              style: const TextStyle(
-                fontSize: 16,
+              style: TextStyle(
+                fontSize: ResponsiveUtils.getResponsiveFontSize(context, 16),
                 fontWeight: FontWeight.w600,
               ),
             ),

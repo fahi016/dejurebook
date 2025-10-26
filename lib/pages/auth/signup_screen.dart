@@ -8,17 +8,16 @@ class SignUpScreen extends StatelessWidget {
 
   void _handleGoogleLogin(BuildContext context) {
     Navigator.push(
-  context,
-  MaterialPageRoute(builder: (context) => const UserSelection()),
-);
+      context,
+      MaterialPageRoute(builder: (context) => const UserSelection()),
+    );
   }
 
   void _handlePhoneLogin(BuildContext context) {
     Navigator.push(
-  context,
-  MaterialPageRoute(builder: (context) => const UserSelection()),
-);
-
+      context,
+      MaterialPageRoute(builder: (context) => const UserSelection()),
+    );
   }
 
   void _navigateToTerms(BuildContext context) {

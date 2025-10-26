@@ -1,6 +1,5 @@
 import 'package:dejurebook/pages/on_boarding/on_boarding_page.dart';
 import 'package:flutter/material.dart';
-import 'package:dejurebook/constants/app_colors.dart';
 
 class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});

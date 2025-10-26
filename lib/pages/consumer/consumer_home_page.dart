@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:dejurebook/constants/app_colors.dart';
+import 'package:dejurebook/constants/responsive_utils.dart';
 import 'package:dejurebook/pages/consumer/bloc/consumer_bloc.dart';
 import 'package:dejurebook/pages/consumer/bloc/consumer_event.dart';
 import 'package:dejurebook/pages/consumer/bloc/consumer_state.dart';
@@ -42,7 +43,7 @@ class ConsumerHomeView extends StatelessWidget {
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     return AppBar(
-      backgroundColor: AppColors.white,
+      backgroundColor: AppColors.getSurfaceColor(context),
       elevation: 0,
       automaticallyImplyLeading: false,
       centerTitle: true,
@@ -56,19 +57,19 @@ class ConsumerHomeView extends StatelessWidget {
                 onPressed: () {},
                 icon: Image.asset(
                   'assets/images/notification_image.png',
-                  width: 24,
-                  height: 24,
+                  width: ResponsiveUtils.getResponsiveFontSize(context, 24),
+                  height: ResponsiveUtils.getResponsiveFontSize(context, 24),
                 ),
               ),
               IconButton(
                 onPressed: () {
-                  Navigator.of(context).push(
-                      MaterialPageRoute(builder: (context) => MessageScreen()));
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => const MessageScreen()));
                 },
                 icon: Image.asset(
                   'assets/images/chat.png',
-                  width: 24,
-                  height: 24,
+                  width: ResponsiveUtils.getResponsiveFontSize(context, 24),
+                  height: ResponsiveUtils.getResponsiveFontSize(context, 24),
                 ),
               ),
             ],
@@ -78,18 +79,21 @@ class ConsumerHomeView extends StatelessWidget {
           Expanded(
             child: Center(
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: EdgeInsets.symmetric(
+                  horizontal: ResponsiveUtils.getResponsiveSpacing(context, 16),
+                  vertical: ResponsiveUtils.getResponsiveSpacing(context, 8),
+                ),
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade200,
+                  color: AppColors.lightGrey,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Text(
+                child: Text(
                   'deJure Premium',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: Colors.green,
-                    fontSize: 14,
+                    color: AppColors.successGreen,
+                    fontSize:
+                        ResponsiveUtils.getResponsiveFontSize(context, 14),
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -97,7 +101,7 @@ class ConsumerHomeView extends StatelessWidget {
             ),
           ),
           SizedBox(
-            width: 40,
+            width: ResponsiveUtils.getResponsiveSpacing(context, 40),
           ),
 
           // 🔹 Right side (Profile)
@@ -110,8 +114,8 @@ class ConsumerHomeView extends StatelessWidget {
               );
             },
             child: Container(
-              width: 36,
-              height: 36,
+              width: ResponsiveUtils.getResponsiveFontSize(context, 36),
+              height: ResponsiveUtils.getResponsiveFontSize(context, 36),
               decoration: const BoxDecoration(
                 shape: BoxShape.circle,
               ),
@@ -143,18 +147,28 @@ class ConsumerHomeView extends StatelessWidget {
   Widget _buildBottomNav(BuildContext context, ConsumerState state) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: AppColors.getSurfaceColor(context),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
+          ),
+        ],
       ),
       child: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+          padding: ResponsiveUtils.getResponsivePadding(context),
           child: GNav(
-            backgroundColor: AppColors.white,
-            color: Colors.grey.shade400,
+            backgroundColor: AppColors.getSurfaceColor(context),
+            color: AppColors.grey,
             activeColor: AppColors.white,
-            tabBackgroundColor: AppColors.black,
-            gap: 8,
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            tabBackgroundColor: AppColors.getPrimaryColor(context),
+            gap: ResponsiveUtils.getResponsiveSpacing(context, 8),
+            padding: EdgeInsets.symmetric(
+              horizontal: ResponsiveUtils.getResponsiveSpacing(context, 20),
+              vertical: ResponsiveUtils.getResponsiveSpacing(context, 12),
+            ),
             tabs: [
               GButton(
                 icon: Icons.home,

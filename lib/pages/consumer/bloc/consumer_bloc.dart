@@ -70,6 +70,8 @@ class ConsumerBloc extends Bloc<ConsumerEvent, ConsumerState> {
         likes: 100 + index * 10,
         comments: 79,
         profileImageUrl: 'assets/images/profile_picture_image.png',
+        isLiked: false,
+        isFollowing: false,
       ),
     );
 
@@ -90,14 +92,9 @@ class ConsumerBloc extends Bloc<ConsumerEvent, ConsumerState> {
   void _onLikeReel(LikeReelEvent event, Emitter<ConsumerState> emit) {
     final updatedReels = state.reels.map((reel) {
       if (reel.id == event.reelId) {
-        return ReelItem(
-          id: reel.id,
-          videoUrl: reel.videoUrl,
-          username: reel.username,
-          caption: reel.caption,
-          likes: reel.likes + 1,
-          comments: reel.comments,
-          profileImageUrl: reel.profileImageUrl,
+        return reel.copyWith(
+          isLiked: !reel.isLiked,
+          likes: reel.isLiked ? reel.likes - 1 : reel.likes + 1,
         );
       }
       return reel;
@@ -117,8 +114,14 @@ class ConsumerBloc extends Bloc<ConsumerEvent, ConsumerState> {
   }
 
   void _onFollowUser(FollowUserEvent event, Emitter<ConsumerState> emit) {
-    // This would update the user's following list
-    emit(state);
+    final updatedReels = state.reels.map((reel) {
+      if (reel.username == event.username) {
+        return reel.copyWith(isFollowing: !reel.isFollowing);
+      }
+      return reel;
+    }).toList();
+
+    emit(state.copyWith(reels: updatedReels));
   }
 
   void _onChangeReel(ChangeReelEvent event, Emitter<ConsumerState> emit) {

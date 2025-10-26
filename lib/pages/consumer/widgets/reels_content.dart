@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dejurebook/constants/app_colors.dart';
+import 'package:dejurebook/constants/responsive_utils.dart';
 import 'package:dejurebook/pages/consumer/bloc/consumer_bloc.dart';
-import 'package:dejurebook/pages/consumer/bloc/consumer_event.dart';
 import 'package:dejurebook/pages/consumer/bloc/consumer_state.dart';
+import 'package:dejurebook/pages/consumer/reels_page.dart';
 
 class ReelsContent extends StatelessWidget {
   const ReelsContent({super.key});
@@ -12,268 +13,134 @@ class ReelsContent extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<ConsumerBloc, ConsumerState>(
       builder: (context, state) {
-        if (state.reels.isEmpty) {
+        if (state.isLoading) {
           return const Center(
             child: CircularProgressIndicator(),
           );
         }
 
-        return PageView.builder(
-          scrollDirection: Axis.vertical,
-          itemCount: state.reels.length,
-          itemBuilder: (context, index) {
-            final reel = state.reels[index];
-            return _buildReelItem(context, reel);
-          },
-          onPageChanged: (index) {
-            context.read<ConsumerBloc>().add(ChangeReelEvent(index));
-          },
-        );
+        if (state.reels.isEmpty) {
+          return Center(
+            child: Text(
+              'No reels available',
+              style: TextStyle(
+                color: AppColors.getOnSurfaceColor(context),
+                fontSize: ResponsiveUtils.getResponsiveFontSize(context, 16),
+              ),
+            ),
+          );
+        }
+
+        return _buildReelsGrid(context, state.reels);
       },
     );
   }
 
-  Widget _buildReelItem(BuildContext context, ReelItem reel) {
-    return Container(
-      color: Colors.grey.shade900,
-      child: Stack(
+  Widget _buildReelsGrid(BuildContext context, List<ReelItem> reels) {
+    return Scaffold(
+      backgroundColor: AppColors.getSurfaceColor(context),
+      body: Column(
         children: [
-          // Video/Image placeholder
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: 200,
-                  height: 300,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade800,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      // Video thumbnail placeholder (illustration)
-                      Image.asset(
-                        'assets/images/law_image.png',
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                        height: double.infinity,
-                      ),
-                      // Play button overlay
-                      Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.brown.shade800.withOpacity(0.8),
-                        ),
-                        padding: const EdgeInsets.all(20),
-                        child: const Icon(
-                          Icons.play_arrow,
-                          color: Colors.white,
-                          size: 50,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+          SizedBox(
+            height: ResponsiveUtils.getResponsiveSpacing(context, 40),
+          ),
+          Text(
+            'Your Scroll Zone!!',
+            style: TextStyle(
+              color: AppColors.getOnSurfaceColor(context),
+              fontSize: ResponsiveUtils.getResponsiveFontSize(context, 20),
+              fontWeight: FontWeight.bold,
             ),
           ),
-
-          // Top bar (close button)
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Icon(
-                    Icons.chat_bubble_outline,
-                    color: AppColors.white,
-                    size: 28,
-                  ),
-                  IconButton(
-                    onPressed: () {
-                      // Navigate back
-                      Navigator.of(context).pop();
-                    },
-                    icon: const Icon(
-                      Icons.close,
-                      color: AppColors.white,
-                      size: 28,
-                    ),
-                  ),
-                ],
+          Expanded(
+            child: PageView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: reels.length,
+              controller: PageController(
+                viewportFraction: ResponsiveUtils.isMobile(context) ? 0.8 : 0.6,
               ),
+              itemBuilder: (context, index) {
+                final reel = reels[index];
+                return _buildReelCard(context, reel);
+              },
             ),
           ),
-
-          // Right side action buttons
-          Positioned(
-            bottom: 120,
-            right: 16,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildActionButton(
-                  context,
-                  icon: Icons.favorite,
-                  label: 'Like',
-                  onTap: () {
-                    context.read<ConsumerBloc>().add(LikeReelEvent(reel.id));
-                  },
-                ),
-                const SizedBox(height: 24),
-                _buildActionButton(
-                  context,
-                  icon: Icons.comment_outlined,
-                  label: '${reel.comments}',
-                  onTap: () {
-                    context.read<ConsumerBloc>().add(CommentReelEvent(reel.id));
-                  },
-                ),
-                const SizedBox(height: 24),
-                _buildActionButton(
-                  context,
-                  icon: Icons.share_outlined,
-                  label: 'Share',
-                  onTap: () {
-                    context.read<ConsumerBloc>().add(ShareReelEvent(reel.id));
-                  },
-                ),
-              ],
-            ),
-          ),
-
-          // Bottom user info and caption
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
-                  colors: [
-                    Colors.black.withOpacity(0.7),
-                    Colors.transparent,
-                  ],
-                ),
+          Padding(
+            padding: ResponsiveUtils.getResponsivePadding(context),
+            child: Text(
+              'Random Scroll',
+              style: TextStyle(
+                color: AppColors.getOnSurfaceColor(context),
+                fontSize: ResponsiveUtils.getResponsiveFontSize(context, 16),
+                fontWeight: FontWeight.w500,
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 2),
-                        ),
-                        child: ClipOval(
-                          child: Image.asset(
-                            'assets/images/profile_picture_image.png',
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () {
-                            context
-                                .read<ConsumerBloc>()
-                                .add(FollowUserEvent(reel.username));
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 8,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.grey.shade800,
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: const Text(
-                              'Follow',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: AppColors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    reel.username,
-                    style: const TextStyle(
-                      color: AppColors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    reel.caption,
-                    style: const TextStyle(
-                      color: AppColors.white,
-                      fontSize: 14,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
+              textAlign: TextAlign.center,
             ),
           ),
+          SizedBox(
+            height: ResponsiveUtils.getResponsiveSpacing(context, 30),
+          )
         ],
       ),
     );
   }
 
-  Widget _buildActionButton(
-    BuildContext context, {
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-  }) {
+  Widget _buildReelCard(BuildContext context, ReelItem reel) {
     return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.black.withOpacity(0.3),
-            ),
-            child: Icon(
-              icon,
-              color: AppColors.white,
-              size: 24,
-            ),
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => const ReelsPage(initialIndex: 0),
           ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: const TextStyle(
-              color: AppColors.white,
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
+        );
+      },
+      child: Container(
+        margin: EdgeInsets.symmetric(
+          horizontal: ResponsiveUtils.getResponsiveSpacing(context, 10),
+          vertical: ResponsiveUtils.getResponsiveSpacing(context, 20),
+        ),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          color: AppColors.grey,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
-          ),
-        ],
+          ],
+        ),
+        child: Stack(
+          children: [
+            // Legal illustration background
+            ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Image.asset(
+                'assets/images/reel_image.png',
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: double.infinity,
+              ),
+            ),
+
+            // Play button overlay
+            Center(
+              child: Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.black.withOpacity(0.8),
+                ),
+                padding: EdgeInsets.all(
+                    ResponsiveUtils.getResponsiveSpacing(context, 20)),
+                child: Icon(
+                  Icons.play_arrow,
+                  color: AppColors.white,
+                  size: ResponsiveUtils.getResponsiveFontSize(context, 50),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

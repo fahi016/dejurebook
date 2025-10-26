@@ -1,9 +1,11 @@
 // awaz_content.dart
 import 'package:dejurebook/pages/consumer/widgets/animated_waveform.dart';
+import 'package:dejurebook/constants/app_colors.dart';
+import 'package:dejurebook/constants/responsive_utils.dart';
 import 'package:flutter/material.dart';
 
 class AwazContent extends StatefulWidget {
-  const AwazContent({Key? key}) : super(key: key);
+  const AwazContent({super.key});
 
   @override
   State<AwazContent> createState() => _AwazContentState();
@@ -121,8 +123,8 @@ class _AwazContentState extends State<AwazContent>
               center: Alignment.center,
               radius: 1.0,
               colors: [
-                Colors.grey.shade200,
-                Colors.white,
+                AppColors.lightGrey,
+                AppColors.getSurfaceColor(context),
               ],
             ),
           ),
@@ -131,7 +133,8 @@ class _AwazContentState extends State<AwazContent>
         // Main content
         Column(
           children: [
-            const SizedBox(height: 100),
+            SizedBox(
+                height: ResponsiveUtils.getResponsiveSpacing(context, 100)),
 
             // "Talk here" text with arrow - hidden when listening
             if (!_isListening)
@@ -144,16 +147,21 @@ class _AwazContentState extends State<AwazContent>
                         onPressed: () {},
                         icon: Image.asset(
                           'assets/images/radio_studio_image.png',
-                          width: 35,
-                          height: 35,
+                          width: ResponsiveUtils.getResponsiveFontSize(
+                              context, 35),
+                          height: ResponsiveUtils.getResponsiveFontSize(
+                              context, 35),
                         ),
                       ),
-                      const SizedBox(width: 4),
+                      SizedBox(
+                          width:
+                              ResponsiveUtils.getResponsiveSpacing(context, 4)),
                       Text(
                         'Talk here',
                         style: TextStyle(
-                          fontSize: 18,
-                          color: Colors.black,
+                          fontSize: ResponsiveUtils.getResponsiveFontSize(
+                              context, 18),
+                          color: AppColors.getOnSurfaceColor(context),
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -168,8 +176,10 @@ class _AwazContentState extends State<AwazContent>
                           offset: Offset(0, _arrowAnimation.value),
                           child: Image.asset(
                             'assets/images/arrow_down_image.png',
-                            width: 40,
-                            height: 40,
+                            width: ResponsiveUtils.getResponsiveFontSize(
+                                context, 40),
+                            height: ResponsiveUtils.getResponsiveFontSize(
+                                context, 40),
                           ),
                         );
                       },
@@ -192,29 +202,34 @@ class _AwazContentState extends State<AwazContent>
                           child: GestureDetector(
                             onTap: _toggleListening,
                             child: Container(
-                              width: 200,
-                              height: 200,
+                              width: ResponsiveUtils.getResponsiveFontSize(
+                                  context, 200),
+                              height: ResponsiveUtils.getResponsiveFontSize(
+                                  context, 200),
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: const Color.fromARGB(
-                                        255, 209, 207, 207),
+                                    color: AppColors.lightGrey,
                                     blurRadius: 15,
                                     spreadRadius: 9,
                                   ),
                                 ],
                               ),
                               child: Container(
-                                margin: const EdgeInsets.all(20),
+                                margin: EdgeInsets.all(
+                                    ResponsiveUtils.getResponsiveSpacing(
+                                        context, 20)),
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: Colors.grey.shade800,
+                                  color: AppColors.grey,
                                 ),
                                 child: Image.asset(
                                   'assets/images/equality_image.png',
-                                  width: 24,
-                                  height: 24,
+                                  width: ResponsiveUtils.getResponsiveFontSize(
+                                      context, 24),
+                                  height: ResponsiveUtils.getResponsiveFontSize(
+                                      context, 24),
                                   fit: BoxFit.fill,
                                 ),
                               ),
@@ -224,22 +239,30 @@ class _AwazContentState extends State<AwazContent>
                       },
                     ),
 
-                    const SizedBox(height: 80),
+                    SizedBox(
+                        height:
+                            ResponsiveUtils.getResponsiveSpacing(context, 80)),
 
                     // Animated prompts or listening indicator
                     SizedBox(
-                      height: 100,
+                      height:
+                          ResponsiveUtils.getResponsiveSpacing(context, 100),
                       child: _isListening
                           ? Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                AnimatedWaveform(),
-                                const SizedBox(height: 20),
+                                const AnimatedWaveform(),
+                                SizedBox(
+                                    height:
+                                        ResponsiveUtils.getResponsiveSpacing(
+                                            context, 20)),
                                 Text(
                                   'Listening...',
                                   style: TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 18,
+                                    color: AppColors.getOnSurfaceColor(context),
+                                    fontSize:
+                                        ResponsiveUtils.getResponsiveFontSize(
+                                            context, 18),
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
@@ -258,8 +281,11 @@ class _AwazContentState extends State<AwazContent>
                                         child: Text(
                                           _prompts[_currentPromptIndex],
                                           style: TextStyle(
-                                            fontSize: 16,
-                                            color: Colors.black,
+                                            fontSize: ResponsiveUtils
+                                                .getResponsiveFontSize(
+                                                    context, 16),
+                                            color: AppColors.getOnSurfaceColor(
+                                                context),
                                             fontWeight: FontWeight.w400,
                                           ),
                                           textAlign: TextAlign.center,

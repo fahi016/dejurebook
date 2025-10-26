@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dejurebook/constants/app_colors.dart';
+import 'package:dejurebook/constants/responsive_utils.dart';
 import 'package:dejurebook/pages/consumer/bloc/consumer_bloc.dart';
 import 'package:dejurebook/pages/consumer/bloc/consumer_event.dart';
 
@@ -26,14 +27,23 @@ class HomeContent extends StatelessWidget {
 
   Widget _buildTabBar(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      padding: ResponsiveUtils.getResponsivePadding(context),
+      decoration: BoxDecoration(
+        color: AppColors.getSurfaceColor(context),
+        border: Border(
+          bottom: BorderSide(
+            color: AppColors.borderColor,
+            width: 1,
+          ),
+        ),
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           _buildTab(context, 'deJure', 0),
-          const SizedBox(width: 30),
+          SizedBox(width: ResponsiveUtils.getResponsiveSpacing(context, 30)),
           _buildTab(context, 'News', 1),
-          const SizedBox(width: 30),
+          SizedBox(width: ResponsiveUtils.getResponsiveSpacing(context, 30)),
           _buildTab(context, 'Quires', 2),
         ],
       ),
@@ -52,21 +62,24 @@ class HomeContent extends StatelessWidget {
           Text(
             title,
             style: TextStyle(
-              fontSize: 16,
+              fontSize: ResponsiveUtils.getResponsiveFontSize(context, 16),
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
               color: isSelected
-                  ? AppColors.black
-                  : const Color.fromARGB(255, 26, 26, 26),
+                  ? AppColors.getPrimaryColor(context)
+                  : AppColors.getOnSurfaceColor(context),
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: ResponsiveUtils.getResponsiveSpacing(context, 8)),
           if (isSelected)
             Container(
-              width: 30,
-              height: 3,
-              decoration: const BoxDecoration(
-                color: AppColors.black,
-                borderRadius: BorderRadius.all(Radius.circular(2)),
+              width: ResponsiveUtils.getResponsiveSpacing(context, 30),
+              height: ResponsiveUtils.getResponsiveSpacing(context, 3),
+              decoration: BoxDecoration(
+                color: AppColors.getPrimaryColor(context),
+                borderRadius: BorderRadius.all(
+                  Radius.circular(
+                      ResponsiveUtils.getResponsiveSpacing(context, 2)),
+                ),
               ),
             ),
         ],
@@ -75,43 +88,47 @@ class HomeContent extends StatelessWidget {
   }
 
   Widget _buildTabContent() {
-    switch (currentTabIndex) {
-      case 0:
-        return _buildDeJureContent();
-      case 1:
-        return _buildNewsContent();
-      case 2:
-        return _buildQuiresContent();
-      default:
-        return _buildDeJureContent();
-    }
+    return Builder(
+      builder: (context) {
+        switch (currentTabIndex) {
+          case 0:
+            return _buildDeJureContent(context);
+          case 1:
+            return _buildNewsContent(context);
+          case 2:
+            return _buildQuiresContent(context);
+          default:
+            return _buildDeJureContent(context);
+        }
+      },
+    );
   }
 
-  Widget _buildDeJureContent() {
-    return const Center(
+  Widget _buildDeJureContent(BuildContext context) {
+    return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
             Icons.home,
-            size: 64,
-            color: Colors.grey,
+            size: ResponsiveUtils.getResponsiveFontSize(context, 64),
+            color: AppColors.grey,
           ),
-          SizedBox(height: 16),
+          SizedBox(height: ResponsiveUtils.getResponsiveSpacing(context, 16)),
           Text(
             'Welcome to deJure',
             style: TextStyle(
-              fontSize: 24,
+              fontSize: ResponsiveUtils.getResponsiveFontSize(context, 24),
               fontWeight: FontWeight.bold,
-              color: AppColors.black,
+              color: AppColors.getOnSurfaceColor(context),
             ),
           ),
-          SizedBox(height: 8),
+          SizedBox(height: ResponsiveUtils.getResponsiveSpacing(context, 8)),
           Text(
             'Your legal journey starts here',
             style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey,
+              fontSize: ResponsiveUtils.getResponsiveFontSize(context, 16),
+              color: AppColors.grey,
             ),
           ),
         ],
@@ -119,31 +136,31 @@ class HomeContent extends StatelessWidget {
     );
   }
 
-  Widget _buildNewsContent() {
-    return const Center(
+  Widget _buildNewsContent(BuildContext context) {
+    return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
             Icons.newspaper,
-            size: 64,
-            color: Colors.grey,
+            size: ResponsiveUtils.getResponsiveFontSize(context, 64),
+            color: AppColors.grey,
           ),
-          SizedBox(height: 16),
+          SizedBox(height: ResponsiveUtils.getResponsiveSpacing(context, 16)),
           Text(
             'Legal News',
             style: TextStyle(
-              fontSize: 24,
+              fontSize: ResponsiveUtils.getResponsiveFontSize(context, 24),
               fontWeight: FontWeight.bold,
-              color: AppColors.black,
+              color: AppColors.getOnSurfaceColor(context),
             ),
           ),
-          SizedBox(height: 8),
+          SizedBox(height: ResponsiveUtils.getResponsiveSpacing(context, 8)),
           Text(
             'Stay updated with latest legal news',
             style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey,
+              fontSize: ResponsiveUtils.getResponsiveFontSize(context, 16),
+              color: AppColors.grey,
             ),
           ),
         ],
@@ -151,31 +168,31 @@ class HomeContent extends StatelessWidget {
     );
   }
 
-  Widget _buildQuiresContent() {
-    return const Center(
+  Widget _buildQuiresContent(BuildContext context) {
+    return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
             Icons.question_answer,
-            size: 64,
-            color: Colors.grey,
+            size: ResponsiveUtils.getResponsiveFontSize(context, 64),
+            color: AppColors.grey,
           ),
-          SizedBox(height: 16),
+          SizedBox(height: ResponsiveUtils.getResponsiveSpacing(context, 16)),
           Text(
             'Legal Queries',
             style: TextStyle(
-              fontSize: 24,
+              fontSize: ResponsiveUtils.getResponsiveFontSize(context, 24),
               fontWeight: FontWeight.bold,
-              color: AppColors.black,
+              color: AppColors.getOnSurfaceColor(context),
             ),
           ),
-          SizedBox(height: 8),
+          SizedBox(height: ResponsiveUtils.getResponsiveSpacing(context, 8)),
           Text(
             'Ask questions and get legal advice',
             style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey,
+              fontSize: ResponsiveUtils.getResponsiveFontSize(context, 16),
+              color: AppColors.grey,
             ),
           ),
         ],

@@ -67,6 +67,8 @@ class ReelItem extends Equatable {
   final int likes;
   final int comments;
   final String profileImageUrl;
+  final bool isLiked;
+  final bool isFollowing;
 
   const ReelItem({
     required this.id,
@@ -76,7 +78,33 @@ class ReelItem extends Equatable {
     required this.likes,
     required this.comments,
     required this.profileImageUrl,
+    this.isLiked = false,
+    this.isFollowing = false,
   });
+
+  ReelItem copyWith({
+    String? id,
+    String? videoUrl,
+    String? username,
+    String? caption,
+    int? likes,
+    int? comments,
+    String? profileImageUrl,
+    bool? isLiked,
+    bool? isFollowing,
+  }) {
+    return ReelItem(
+      id: id ?? this.id,
+      videoUrl: videoUrl ?? this.videoUrl,
+      username: username ?? this.username,
+      caption: caption ?? this.caption,
+      likes: likes ?? this.likes,
+      comments: comments ?? this.comments,
+      profileImageUrl: profileImageUrl ?? this.profileImageUrl,
+      isLiked: isLiked ?? this.isLiked,
+      isFollowing: isFollowing ?? this.isFollowing,
+    );
+  }
 
   @override
   List<Object?> get props => [
@@ -87,5 +115,7 @@ class ReelItem extends Equatable {
         likes,
         comments,
         profileImageUrl,
+        isLiked,
+        isFollowing,
       ];
 }
