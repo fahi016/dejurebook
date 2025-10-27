@@ -21,18 +21,19 @@ class ProfileService {
       print('fullName: $fullName');
       print('profession: $profession');
 
-      final response = await _supabase
-          .from('profiles')
-          .insert({
-            'id': userId,
-            'email': email,
-            'full_name': fullName,
-            'avatar_url': avatarUrl,
-            'user_type': userType,
-            'profession': profession,
-          })
-          .select()
-          .single();
+      final Map<String, dynamic> insertData = {
+        'id': userId,
+        'email': email,
+        'full_name': fullName,
+        'avatar_url': avatarUrl,
+        'user_type': userType,
+        'profession': profession,
+      };
+
+      print('Insert data: $insertData');
+
+      final response =
+          await _supabase.from('profiles').insert(insertData).select().single();
 
       print('Profile created response: $response');
       final profile = UserProfile.fromJson(response);
@@ -87,21 +88,37 @@ class ProfileService {
     String? profession,
   }) async {
     try {
+      print('Updating profile with data:');
+      print('userId: $userId');
+      print('fullName: $fullName');
+      print('profession: $profession');
+      print('userType: $userType');
+
+      // Only include fields that are not null in the update
+      final Map<String, dynamic> updateData = {
+        'updated_at': DateTime.now().toIso8601String(),
+      };
+
+      if (fullName != null) updateData['full_name'] = fullName;
+      if (avatarUrl != null) updateData['avatar_url'] = avatarUrl;
+      if (userType != null) updateData['user_type'] = userType;
+      if (profession != null) updateData['profession'] = profession;
+
+      print('Update data: $updateData');
+
       final response = await _supabase
           .from('profiles')
-          .update({
-            'full_name': fullName,
-            'avatar_url': avatarUrl,
-            'user_type': userType,
-            'profession': profession,
-            'updated_at': DateTime.now().toIso8601String(),
-          })
+          .update(updateData)
           .eq('id', userId)
           .select()
           .single();
 
-      return UserProfile.fromJson(response);
+      print('Profile updated response: $response');
+      final profile = UserProfile.fromJson(response);
+      print('Parsed profile: ${profile.fullName}, ${profile.profession}');
+      return profile;
     } catch (e) {
+      print('Error updating profile: $e');
       throw Exception('Failed to update profile: $e');
     }
   }

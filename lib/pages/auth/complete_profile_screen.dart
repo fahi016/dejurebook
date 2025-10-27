@@ -4,6 +4,7 @@ import 'package:dejurebook/bloc/auth_bloc.dart';
 import 'package:dejurebook/services/profile_service.dart';
 import 'package:dejurebook/services/auth_service.dart';
 import 'package:dejurebook/pages/user_selection/user_selection.dart';
+import 'package:dejurebook/models/user_profile.dart';
 
 class CompleteProfileScreen extends StatefulWidget {
   final String email;
@@ -251,25 +252,46 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
             ),
           );
 
-      // Wait for authentication to complete
-      await Future.delayed(const Duration(seconds: 2));
+      // Wait for authentication to complete by listening to auth state
+      final authState = await context.read<AuthBloc>().stream.firstWhere(
+            (state) => state is AuthAuthenticated || state is AuthError,
+          );
 
-      // Create profile in database
+      if (authState is AuthError) {
+        throw Exception(authState.message);
+      }
+
+      // Create or update profile in database
       final user = AuthService.currentUser;
       if (user != null) {
-        debugPrint('Creating profile for user: ${user.id}');
+        debugPrint('Creating/updating profile for user: ${user.id}');
         debugPrint('Name: ${_nameController.text.trim()}');
         debugPrint('Profession: ${_professionController.text.trim()}');
 
-        final profile = await ProfileService.createProfile(
-          userId: user.id,
-          email: widget.email,
-          fullName: _nameController.text.trim(),
-          profession: _professionController.text.trim(),
-        );
+        // Check if profile exists
+        final profileExists = await ProfileService.profileExists(user.id);
 
-        debugPrint(
-            'Profile created: ${profile.fullName}, ${profile.profession}');
+        UserProfile profile;
+        if (profileExists) {
+          // Profile exists, update it
+          debugPrint('Profile exists, updating...');
+          profile = await ProfileService.updateProfile(
+            userId: user.id,
+            fullName: _nameController.text.trim(),
+            profession: _professionController.text.trim(),
+          );
+        } else {
+          // Profile doesn't exist, create it
+          debugPrint('Profile does not exist, creating...');
+          profile = await ProfileService.createProfile(
+            userId: user.id,
+            email: widget.email,
+            fullName: _nameController.text.trim(),
+            profession: _professionController.text.trim(),
+          );
+        }
+
+        debugPrint('Profile saved: ${profile.fullName}, ${profile.profession}');
 
         if (!mounted) return;
 
@@ -282,6 +304,8 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
         );
       }
     } catch (e) {
+      debugPrint('Error in _submitProfile: $e');
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error: $e'),

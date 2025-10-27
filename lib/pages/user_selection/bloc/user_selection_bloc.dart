@@ -25,12 +25,16 @@ class UserSelectionBloc extends Bloc<UserSelectionEvent, UserSelectionState> {
         // Save user type to profile
         final userTypeString =
             _convertUserTypeToString(state.selectedUserType!);
+
+        print('Updating user type to: $userTypeString');
         await ProfileService.updateCurrentUserProfile(
           userType: userTypeString,
         );
+        print('User type updated successfully');
 
         emit(state.copyWith(isCompleted: true));
       } catch (e) {
+        print('Error updating user type: $e');
         // Handle error - user type save failed but continue anyway
         emit(state.copyWith(isCompleted: true));
       }

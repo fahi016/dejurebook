@@ -124,6 +124,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
+// inside AuthBloc
   Future<void> _onAuthSignUpRequested(
     AuthSignUpRequested event,
     Emitter<AuthState> emit,
@@ -137,9 +138,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       );
 
       if (response.user != null) {
-        emit(AuthSuccess(
-            message:
-                'Account created successfully!'));
+        // Emit Authenticated so UI can react and create profile reliably
+        emit(AuthAuthenticated(user: response.user!));
       } else {
         emit(AuthError(message: 'Failed to create account'));
       }
@@ -147,6 +147,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(AuthError(message: e.toString()));
     }
   }
+
 
   Future<void> _onAuthSignInRequested(
     AuthSignInRequested event,
