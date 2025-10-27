@@ -1,4 +1,5 @@
 import 'package:dejurebook/pages/on_boarding/on_boarding_page.dart';
+import 'package:dejurebook/constants/responsive_utils.dart';
 import 'package:flutter/material.dart';
 
 class SplashScreen extends StatelessWidget {
@@ -21,8 +22,8 @@ class SplashScreen extends StatelessWidget {
       body: Center(
         child: Image.asset(
           'assets/logos/main_logo.png',
-          width: 267,
-          height: 62,
+          width: ResponsiveUtils.getResponsiveFontSize(context, 267),
+          height: ResponsiveUtils.getResponsiveFontSize(context, 62),
           fit: BoxFit.contain,
         ),
       ),

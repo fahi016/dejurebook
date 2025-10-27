@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dejurebook/constants/app_colors.dart';
-import 'package:dejurebook/constants/responsive_utils.dart';
 import 'package:dejurebook/pages/ai_chat/bloc/ai_chat_bloc.dart';
 import 'package:dejurebook/pages/ai_chat/bloc/ai_chat_event.dart';
 import 'package:dejurebook/pages/ai_chat/bloc/ai_chat_state.dart';
@@ -67,14 +66,14 @@ class _AiChatPageState extends State<AiChatPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.background,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(
+          icon: Icon(
             Icons.close,
-            color: Colors.black,
+            color: Theme.of(context).colorScheme.onSurface,
             size: 28,
           ),
           onPressed: () => Navigator.of(context).pop(),
@@ -84,9 +83,9 @@ class _AiChatPageState extends State<AiChatPage> {
       body: BlocBuilder<AiChatBloc, AiChatState>(
         builder: (context, state) {
           if (state is AiChatLoading) {
-            return const Center(
+            return Center(
               child: CircularProgressIndicator(
-                color: Colors.black,
+                color: Theme.of(context).colorScheme.primary,
               ),
             );
           }
@@ -104,9 +103,9 @@ class _AiChatPageState extends State<AiChatPage> {
                   const SizedBox(height: 16),
                   Text(
                     state.message,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
-                      color: Colors.black,
+                      color: Theme.of(context).colorScheme.onBackground,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -160,7 +159,7 @@ class _AiChatPageState extends State<AiChatPage> {
                                   color: Colors.grey[200],
                                   borderRadius: BorderRadius.circular(20),
                                 ),
-                                child: const Row(
+                                child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     SizedBox(
@@ -168,15 +167,19 @@ class _AiChatPageState extends State<AiChatPage> {
                                       height: 16,
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2,
-                                        color: Colors.black,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary,
                                       ),
                                     ),
-                                    SizedBox(width: 8),
+                                    const SizedBox(width: 8),
                                     Text(
                                       'AI is typing...',
                                       style: TextStyle(
                                         fontSize: 14,
-                                        color: Colors.black87,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onBackground,
                                       ),
                                     ),
                                   ],

@@ -43,11 +43,9 @@ class CustomButton extends StatelessWidget {
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
             backgroundColor: backgroundColor ??
-                (isEnabled
-                    ? AppColors.getPrimaryColor(context)
-                    : AppColors.grey),
+                (isEnabled ? const Color(0xFF252525) : const Color(0xFF999999)),
             foregroundColor: textColor ??
-                (isEnabled ? AppColors.white : AppColors.lightGrey),
+                (isEnabled ? Colors.white : const Color(0xFF999999)),
             minimumSize: Size(
               width ?? double.infinity,
               height ?? ResponsiveUtils.getResponsiveFontSize(context, 55),

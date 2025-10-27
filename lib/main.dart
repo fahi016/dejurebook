@@ -1,12 +1,11 @@
 import 'package:dejurebook/pages/messages/bloc/message_bloc.dart';
 import 'package:dejurebook/pages/splash_page/splash_screen.dart';
 import 'package:dejurebook/pages/on_boarding/bloc/on_boarding_bloc.dart';
-import 'package:dejurebook/constants/app_colors.dart';
+import 'package:dejurebook/constants/app_theme.dart';
 import 'package:dejurebook/pages/user_selection/bloc/user_selection_bloc.dart';
 import 'package:dejurebook/pages/ai_chat/bloc/ai_chat_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 void main() {
   // Optional: Set up BLoC observer for debugging
@@ -80,17 +79,9 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'DejureBook',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          colorScheme: AppColors.lightColorScheme,
-          useMaterial3: true,
-          textTheme: GoogleFonts.montserratTextTheme(),
-        ),
-        darkTheme: ThemeData(
-          colorScheme: AppColors.darkColorScheme,
-          useMaterial3: true,
-          textTheme:
-              GoogleFonts.montserratTextTheme(ThemeData.dark().textTheme),
-        ),
+        theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
+        themeMode: ThemeMode.system,
         home: const SplashScreen(),
       ),
     );

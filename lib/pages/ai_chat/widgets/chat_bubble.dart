@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:dejurebook/constants/app_colors.dart';
-import 'package:dejurebook/constants/responsive_utils.dart';
 import 'package:dejurebook/models/ai_chat_model.dart';
 
 class ChatBubble extends StatelessWidget {
@@ -26,12 +24,18 @@ class ChatBubble extends StatelessWidget {
           if (message.isUser)
             Align(
               alignment: Alignment.centerLeft,
-              child: Text(
-                message.content,
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                margin: const EdgeInsets.only(bottom: 8),
+                
+                child: Text(
+                  message.content,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Theme.of(context).colorScheme.onBackground,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             )
@@ -80,12 +84,26 @@ class ChatBubble extends StatelessWidget {
                   ),
 
                 // AI response text
-                Text(
-                  message.content,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    color: Colors.black,
-                    height: 1.5,
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surface,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .outline
+                          .withOpacity(0.2),
+                    ),
+                  ),
+                  child: Text(
+                    message.content,
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: Theme.of(context).colorScheme.onSurface,
+                      height: 1.5,
+                    ),
                   ),
                 ),
 
@@ -106,18 +124,18 @@ class ChatBubble extends StatelessWidget {
                               vertical: 8,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: Theme.of(context).colorScheme.surface,
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
-                                color: Colors.grey[300]!,
+                                color: Theme.of(context).colorScheme.outline,
                                 width: 1,
                               ),
                             ),
                             child: Text(
                               action,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 14,
-                                color: Colors.black,
+                                color: Theme.of(context).colorScheme.onSurface,
                                 fontWeight: FontWeight.w400,
                               ),
                             ),

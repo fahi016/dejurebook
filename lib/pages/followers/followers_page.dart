@@ -65,7 +65,6 @@ class FollowersView extends StatelessWidget {
           style: TextStyle(
             color: Colors.green,
             fontSize: 14,
-            fontWeight: FontWeight.w800,
           ),
         ),
       ),

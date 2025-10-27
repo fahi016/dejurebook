@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:dejurebook/constants/app_colors.dart';
+import 'package:dejurebook/constants/responsive_utils.dart';
 import 'package:dejurebook/pages/profile/bloc/profile_bloc.dart';
 import 'package:dejurebook/pages/profile/bloc/profile_event.dart';
 import 'package:dejurebook/pages/profile/bloc/profile_state.dart';
@@ -28,7 +28,7 @@ class ProfileView extends StatelessWidget {
     return BlocBuilder<ProfileBloc, ProfileState>(
       builder: (context, state) {
         return Scaffold(
-          backgroundColor: AppColors.white,
+          backgroundColor: Theme.of(context).colorScheme.background,
           appBar: _buildAppBar(context),
           body: _buildBody(context, state),
         );
@@ -38,7 +38,7 @@ class ProfileView extends StatelessWidget {
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     return AppBar(
-      backgroundColor: AppColors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       elevation: 0,
       automaticallyImplyLeading: false,
       centerTitle: true,
@@ -50,19 +50,19 @@ class ProfileView extends StatelessWidget {
             onPressed: () {
               Navigator.of(context).pop();
             },
-            icon: const Icon(
+            icon: Icon(
               Icons.close,
-              color: AppColors.black,
+              color: Theme.of(context).colorScheme.onSurface,
               size: 24,
             ),
           ),
 
           // Title
-          const Text(
+          Text(
             'Profile',
             style: TextStyle(
-              color: AppColors.black,
-              fontSize: 20,
+              color: Theme.of(context).colorScheme.onSurface,
+              fontSize: ResponsiveUtils.getResponsiveFontSize(context, 20),
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -78,8 +78,15 @@ class ProfileView extends StatelessWidget {
             },
             icon: Image.asset(
               'assets/images/settings_image.png',
-              width: 24,
-              height: 24,
+              width: ResponsiveUtils.getResponsiveFontSize(context, 24),
+              height: ResponsiveUtils.getResponsiveFontSize(context, 24),
+              errorBuilder: (context, error, stackTrace) {
+                return Icon(
+                  Icons.settings,
+                  color: Theme.of(context).colorScheme.onSurface,
+                  size: ResponsiveUtils.getResponsiveFontSize(context, 24),
+                );
+              },
             ),
           ),
         ],
@@ -90,7 +97,7 @@ class ProfileView extends StatelessWidget {
   Widget _buildBody(BuildContext context, ProfileState state) {
     return SingleChildScrollView(
       child: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: ResponsiveUtils.getResponsivePadding(context),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -100,23 +107,39 @@ class ProfileView extends StatelessWidget {
               children: [
                 // Profile Picture
                 Container(
-                  width: 100,
-                  height: 100,
-                  decoration: const BoxDecoration(
+                  width: ResponsiveUtils.getResponsiveFontSize(context, 100),
+                  height: ResponsiveUtils.getResponsiveFontSize(context, 100),
+                  decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.fromBorderSide(
-                      BorderSide(color: AppColors.black, width: 1),
+                      BorderSide(
+                        color: Theme.of(context).colorScheme.outline,
+                        width: 2,
+                      ),
                     ),
                   ),
                   child: ClipOval(
                     child: Image.asset(
                       'assets/images/profile_picture_image.png',
                       fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          color: Theme.of(context).colorScheme.surfaceVariant,
+                          child: Icon(
+                            Icons.person,
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
+                            size: ResponsiveUtils.getResponsiveFontSize(
+                                context, 40),
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ),
 
-                const SizedBox(width: 20),
+                SizedBox(
+                    width: ResponsiveUtils.getResponsiveSpacing(context, 20)),
 
                 // User Details
                 Expanded(
@@ -125,26 +148,33 @@ class ProfileView extends StatelessWidget {
                     children: [
                       Text(
                         state.name,
-                        style: const TextStyle(
-                          fontSize: 24,
+                        style: TextStyle(
+                          fontSize: ResponsiveUtils.getResponsiveFontSize(
+                              context, 24),
                           fontWeight: FontWeight.bold,
-                          color: AppColors.black,
+                          color: Theme.of(context).colorScheme.onBackground,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(
+                          height:
+                              ResponsiveUtils.getResponsiveSpacing(context, 8)),
                       Text(
                         state.location,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          color: Colors.black,
+                        style: TextStyle(
+                          fontSize: ResponsiveUtils.getResponsiveFontSize(
+                              context, 16),
+                          color: Theme.of(context).colorScheme.onBackground,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(
+                          height:
+                              ResponsiveUtils.getResponsiveSpacing(context, 4)),
                       Text(
                         state.profession,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          color: Colors.black,
+                        style: TextStyle(
+                          fontSize: ResponsiveUtils.getResponsiveFontSize(
+                              context, 16),
+                          color: Theme.of(context).colorScheme.onBackground,
                         ),
                       ),
                     ],
@@ -153,18 +183,19 @@ class ProfileView extends StatelessWidget {
               ],
             ),
 
-            const SizedBox(height: 16),
+            SizedBox(height: ResponsiveUtils.getResponsiveSpacing(context, 16)),
 
             // Join Date
             Text(
               'Joined ${state.joinDate}',
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.black,
+              style: TextStyle(
+                fontSize: ResponsiveUtils.getResponsiveFontSize(context, 14),
+                color:
+                    Theme.of(context).colorScheme.onBackground.withOpacity(0.7),
               ),
             ),
 
-            const SizedBox(height: 32),
+            SizedBox(height: ResponsiveUtils.getResponsiveSpacing(context, 32)),
 
             // Action Buttons
             Row(
@@ -173,8 +204,8 @@ class ProfileView extends StatelessWidget {
                   child: _buildActionButton(
                     context,
                     '${state.followersCount} Followers',
-                    backgroundColor: Colors.black,
-                    textColor: AppColors.white,
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    textColor: Theme.of(context).colorScheme.onPrimary,
                     onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
@@ -184,14 +215,15 @@ class ProfileView extends StatelessWidget {
                     },
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(
+                    width: ResponsiveUtils.getResponsiveSpacing(context, 12)),
                 Expanded(
                   child: _buildActionButton(
                     context,
                     'Messages',
-                    backgroundColor: AppColors.white,
-                    textColor: AppColors.black,
-                    borderColor: AppColors.black,
+                    backgroundColor: Theme.of(context).colorScheme.surface,
+                    textColor: Theme.of(context).colorScheme.onSurface,
+                    borderColor: Theme.of(context).colorScheme.outline,
                     onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
@@ -204,7 +236,7 @@ class ProfileView extends StatelessWidget {
               ],
             ),
 
-            const SizedBox(height: 16),
+            SizedBox(height: ResponsiveUtils.getResponsiveSpacing(context, 16)),
 
             // Become a Creator Button
             SizedBox(
@@ -212,9 +244,9 @@ class ProfileView extends StatelessWidget {
               child: _buildActionButton(
                 context,
                 'Become a Creator',
-                backgroundColor: AppColors.white,
-                textColor: AppColors.black,
-                borderColor: AppColors.black,
+                backgroundColor: Theme.of(context).colorScheme.surface,
+                textColor: Theme.of(context).colorScheme.onSurface,
+                borderColor: Theme.of(context).colorScheme.outline,
                 onTap: () {
                   context.read<ProfileBloc>().add(const BecomeCreatorEvent());
                 },
@@ -237,19 +269,31 @@ class ProfileView extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+        padding: EdgeInsets.symmetric(
+          vertical: ResponsiveUtils.getResponsiveSpacing(context, 12),
+          horizontal: ResponsiveUtils.getResponsiveSpacing(context, 16),
+        ),
         decoration: BoxDecoration(
           color: backgroundColor,
-          borderRadius: BorderRadius.circular(15),
+          borderRadius: BorderRadius.circular(
+            ResponsiveUtils.getResponsiveSpacing(context, 15),
+          ),
           border: borderColor != null
               ? Border.all(color: borderColor, width: 1)
               : null,
+          boxShadow: [
+            BoxShadow(
+              color: Theme.of(context).colorScheme.shadow.withOpacity(0.1),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Text(
           text,
           textAlign: TextAlign.center,
           style: TextStyle(
-            fontSize: 16,
+            fontSize: ResponsiveUtils.getResponsiveFontSize(context, 16),
             fontWeight: FontWeight.w600,
             color: textColor,
           ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dejurebook/constants/responsive_utils.dart';
 import 'package:dejurebook/pages/user_selection/bloc/user_selection_bloc.dart';
 import 'package:dejurebook/pages/user_selection/bloc/user_selection_event.dart';
 import 'package:dejurebook/pages/user_selection/bloc/user_selection_state.dart';
@@ -42,28 +43,32 @@ class UserSelectionView extends StatelessWidget {
       },
       builder: (context, state) {
         return Scaffold(
-          backgroundColor: Colors.white,
+          backgroundColor: Theme.of(context).colorScheme.background,
           body: SafeArea(
             child: Column(
               children: [
-                const SizedBox(height: 80),
+                SizedBox(
+                    height: ResponsiveUtils.getResponsiveSpacing(context, 80)),
 
                 // Title
-                const Text(
+                Text(
                   "Let's Get To Know You!",
                   style: TextStyle(
-                    fontSize: 24,
+                    fontSize:
+                        ResponsiveUtils.getResponsiveFontSize(context, 24),
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                    color: Theme.of(context).colorScheme.onBackground,
                   ),
+                  textAlign: TextAlign.center,
                 ),
 
-                const SizedBox(height: 40),
+                SizedBox(
+                    height: ResponsiveUtils.getResponsiveSpacing(context, 40)),
 
                 // User Type Cards
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    padding: ResponsiveUtils.getResponsivePadding(context),
                     child: ListView(
                       children: [
                         UserTypeCard(
@@ -114,7 +119,8 @@ class UserSelectionView extends StatelessWidget {
                   ),
                 ),
 
-                const SizedBox(height: 20),
+                SizedBox(
+                    height: ResponsiveUtils.getResponsiveSpacing(context, 20)),
 
                 // Continue Button
                 CustomButton(
@@ -128,7 +134,8 @@ class UserSelectionView extends StatelessWidget {
                       : null, // Disabled if no selection
                 ),
 
-                const SizedBox(height: 30),
+                SizedBox(
+                    height: ResponsiveUtils.getResponsiveSpacing(context, 30)),
               ],
             ),
           ),

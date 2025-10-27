@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dejurebook/constants/responsive_utils.dart';
 import 'package:dejurebook/pages/user_selection/bloc/user_selection_event.dart';
 
 class UserTypeCard extends StatelessWidget {
@@ -22,40 +23,54 @@ class UserTypeCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.only(bottom: 20, top: 8),
+        margin: EdgeInsets.only(
+          bottom: ResponsiveUtils.getResponsiveSpacing(context, 20),
+          top: ResponsiveUtils.getResponsiveSpacing(context, 8),
+        ),
         child: Stack(
           clipBehavior: Clip.none,
           children: [
             // Main card
             Container(
-              height: 65,
-              padding: const EdgeInsets.only(left: 85, right: 20),
+              height: ResponsiveUtils.getResponsiveFontSize(context, 65),
+              padding: EdgeInsets.only(
+                left: ResponsiveUtils.getResponsiveFontSize(context, 85),
+                right: ResponsiveUtils.getResponsiveSpacing(context, 20),
+              ),
               decoration: BoxDecoration(
-                color: isSelected
-                    ? const Color(0xFF4A4A4A)
-                    : const Color(0xFF3B3B3B),
-                borderRadius: BorderRadius.circular(18),
+                color: const Color(0xFF252525), // Dark gray color
+                borderRadius: BorderRadius.circular(
+                  ResponsiveUtils.getResponsiveSpacing(context, 18),
+                ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.25),
+                    color:
+                        Theme.of(context).colorScheme.shadow.withOpacity(0.25),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
                   ),
                 ],
+                border: isSelected
+                    ? Border.all(
+                        color: Colors.white,
+                        width: 2,
+                      )
+                    : null,
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   SizedBox(
-                    width: 20,
+                    width: ResponsiveUtils.getResponsiveSpacing(context, 20),
                   ),
                   // Title text
                   Expanded(
                     child: Text(
                       title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.white,
-                        fontSize: 16.5,
+                        fontSize: ResponsiveUtils.getResponsiveFontSize(
+                            context, 16.5),
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -63,15 +78,19 @@ class UserTypeCard extends StatelessWidget {
 
                   // Arrow icon
                   Container(
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF595858),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? Colors.white.withOpacity(0.2)
+                          : Colors.white.withOpacity(0.3),
                       shape: BoxShape.circle,
                     ),
-                    padding: const EdgeInsets.all(6),
-                    child: const Icon(
+                    padding: EdgeInsets.all(
+                      ResponsiveUtils.getResponsiveSpacing(context, 6),
+                    ),
+                    child: Icon(
                       Icons.arrow_forward_ios_rounded,
                       color: Colors.white,
-                      size: 18,
+                      size: ResponsiveUtils.getResponsiveFontSize(context, 18),
                     ),
                   ),
                 ],
@@ -80,16 +99,18 @@ class UserTypeCard extends StatelessWidget {
 
             // Circular image - positioned to pop out on the top-left
             Positioned(
-              left: 10,
-              top: -8, // Pops out slightly above the card
+              left: ResponsiveUtils.getResponsiveSpacing(context, 10),
+              top: -ResponsiveUtils.getResponsiveSpacing(
+                  context, 8), // Pops out slightly above the card
               child: Container(
-                width: 70,
-                height: 70,
+                width: ResponsiveUtils.getResponsiveFontSize(context, 70),
+                height: ResponsiveUtils.getResponsiveFontSize(context, 70),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
+                      color:
+                          Theme.of(context).colorScheme.shadow.withOpacity(0.2),
                       blurRadius: 8,
                       offset: const Offset(0, 3),
                     ),
@@ -98,9 +119,20 @@ class UserTypeCard extends StatelessWidget {
                 child: ClipOval(
                   child: Image.asset(
                     imagePath,
-                    width: 75,
-                    height: 75,
+                    width: ResponsiveUtils.getResponsiveFontSize(context, 75),
+                    height: ResponsiveUtils.getResponsiveFontSize(context, 75),
                     fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: Theme.of(context).colorScheme.surface,
+                        child: Icon(
+                          Icons.person,
+                          color: Theme.of(context).colorScheme.onSurface,
+                          size: ResponsiveUtils.getResponsiveFontSize(
+                              context, 30),
+                        ),
+                      );
+                    },
                   ),
                 ),
               ),

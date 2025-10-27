@@ -1,9 +1,9 @@
 import 'package:dejurebook/pages/messages/message_screen.dart';
 import 'package:dejurebook/pages/profile/profile_page.dart';
+import 'package:dejurebook/widgets/custom_image_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
-import 'package:dejurebook/constants/app_colors.dart';
 import 'package:dejurebook/constants/responsive_utils.dart';
 import 'package:dejurebook/pages/consumer/bloc/consumer_bloc.dart';
 import 'package:dejurebook/pages/consumer/bloc/consumer_event.dart';
@@ -32,7 +32,7 @@ class ConsumerHomeView extends StatelessWidget {
     return BlocBuilder<ConsumerBloc, ConsumerState>(
       builder: (context, state) {
         return Scaffold(
-          backgroundColor: AppColors.white,
+          backgroundColor: Theme.of(context).colorScheme.background,
           appBar: _buildAppBar(context),
           body: _buildBody(state),
           bottomNavigationBar: _buildBottomNav(context, state),
@@ -43,7 +43,7 @@ class ConsumerHomeView extends StatelessWidget {
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     return AppBar(
-      backgroundColor: AppColors.getSurfaceColor(context),
+      backgroundColor: Theme.of(context).colorScheme.surface,
       elevation: 0,
       automaticallyImplyLeading: false,
       centerTitle: true,
@@ -55,10 +55,15 @@ class ConsumerHomeView extends StatelessWidget {
             children: [
               IconButton(
                 onPressed: () {},
-                icon: Image.asset(
-                  'assets/images/notification_image.png',
+                icon: CustomImageWidget(
+                  imagePath: 'assets/images/notification_image.png',
                   width: ResponsiveUtils.getResponsiveFontSize(context, 24),
                   height: ResponsiveUtils.getResponsiveFontSize(context, 24),
+                  errorWidget: Icon(
+                    Icons.notifications_outlined,
+                    color: Theme.of(context).colorScheme.onSurface,
+                    size: ResponsiveUtils.getResponsiveFontSize(context, 24),
+                  ),
                 ),
               ),
               IconButton(
@@ -66,10 +71,15 @@ class ConsumerHomeView extends StatelessWidget {
                   Navigator.of(context).push(MaterialPageRoute(
                       builder: (context) => const MessageScreen()));
                 },
-                icon: Image.asset(
-                  'assets/images/chat.png',
+                icon: CustomImageWidget(
+                  imagePath: 'assets/images/chat.png',
                   width: ResponsiveUtils.getResponsiveFontSize(context, 24),
                   height: ResponsiveUtils.getResponsiveFontSize(context, 24),
+                  errorWidget: Icon(
+                    Icons.chat_outlined,
+                    color: Theme.of(context).colorScheme.onSurface,
+                    size: ResponsiveUtils.getResponsiveFontSize(context, 24),
+                  ),
                 ),
               ),
             ],
@@ -84,17 +94,16 @@ class ConsumerHomeView extends StatelessWidget {
                   vertical: ResponsiveUtils.getResponsiveSpacing(context, 8),
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.lightGrey,
+                  color: Theme.of(context).colorScheme.surfaceVariant,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
                   'deJure Premium',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: AppColors.successGreen,
+                    color: const Color(0xFF5C7600),
                     fontSize:
                         ResponsiveUtils.getResponsiveFontSize(context, 14),
-                    fontWeight: FontWeight.w800,
                   ),
                 ),
               ),
@@ -120,9 +129,14 @@ class ConsumerHomeView extends StatelessWidget {
                 shape: BoxShape.circle,
               ),
               clipBehavior: Clip.antiAlias,
-              child: Image.asset(
-                'assets/images/profile_image.png',
+              child: CustomImageWidget(
+                imagePath: 'assets/images/profile_image.png',
                 fit: BoxFit.cover,
+                errorWidget: Icon(
+                  Icons.person,
+                  color: Theme.of(context).colorScheme.onSurface,
+                  size: ResponsiveUtils.getResponsiveFontSize(context, 20),
+                ),
               ),
             ),
           ),
@@ -147,17 +161,16 @@ class ConsumerHomeView extends StatelessWidget {
   Widget _buildBottomNav(BuildContext context, ConsumerState state) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.getSurfaceColor(context),
-        
+        color: Theme.of(context).colorScheme.surface,
       ),
       child: SafeArea(
         child: Padding(
           padding: ResponsiveUtils.getResponsivePadding(context),
           child: GNav(
-            backgroundColor: AppColors.getSurfaceColor(context),
-            color: AppColors.grey,
-            activeColor: AppColors.white,
-            tabBackgroundColor: AppColors.getPrimaryColor(context),
+            backgroundColor: Theme.of(context).colorScheme.surface,
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+            activeColor: Colors.white,
+            tabBackgroundColor: const Color(0xFF252525),
             gap: ResponsiveUtils.getResponsiveSpacing(context, 8),
             padding: EdgeInsets.symmetric(
               horizontal: ResponsiveUtils.getResponsiveSpacing(context, 20),
@@ -168,25 +181,34 @@ class ConsumerHomeView extends StatelessWidget {
                 icon: Icons.home,
                 text: 'Home',
                 leading: state.currentNavIndex == 0
-                    ? Image.asset(
-                        'assets/images/home_nav.png',
-                        width: 24,
-                        height: 24,
-                        color: AppColors.white,
+                    ? CustomImageWidget(
+                        imagePath: 'assets/images/home_nav.png',
+                        width: 30,
+                        height: 30,
+                        errorWidget: Icon(
+                          Icons.home,
+                          color: Theme.of(context).colorScheme.onPrimary,
+                          size: 24,
+                        ),
                       )
                     : Container(
-                        width: 40,
-                        height: 40,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFE0E0E0), // Grey circle background
+                        width: 50,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.surfaceVariant,
                           shape: BoxShape.circle,
                         ),
                         alignment: Alignment.center,
-                        child: Image.asset(
-                          'assets/images/home_nav.png',
+                        child: CustomImageWidget(
+                          imagePath: 'assets/images/home_nav.png',
                           width: 24,
                           height: 24,
-                          color: Colors.grey.shade600,
+                          color: Colors.grey,
+                          errorWidget: Icon(
+                            Icons.home_outlined,
+                            color: Colors.grey,
+                            size: 24,
+                          ),
                         ),
                       ),
               ),
@@ -194,25 +216,35 @@ class ConsumerHomeView extends StatelessWidget {
                 icon: Icons.airplanemode_active,
                 text: 'Awaz',
                 leading: state.currentNavIndex == 1
-                    ? Image.asset(
-                        'assets/images/awaz_nav.png',
-                        width: 24,
-                        height: 24,
-                        color: AppColors.white,
+                    ? CustomImageWidget(
+                        imagePath: 'assets/images/awaz_nav.png',
+                        width: 30,
+                        height: 30,
+                        color: Colors.grey,
+                        errorWidget: Icon(
+                          Icons.airplanemode_active,
+                          color: Theme.of(context).colorScheme.onPrimary,
+                          size: 24,
+                        ),
                       )
                     : Container(
-                        width: 40,
-                        height: 40,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFE0E0E0),
+                        width: 50,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.surfaceVariant,
                           shape: BoxShape.circle,
                         ),
                         alignment: Alignment.center,
-                        child: Image.asset(
-                          'assets/images/awaz_nav.png',
+                        child: CustomImageWidget(
+                          imagePath: 'assets/images/awaz_nav.png',
                           width: 24,
                           height: 24,
-                          color: Colors.grey.shade600,
+                          color: Colors.grey,
+                          errorWidget: Icon(
+                            Icons.airplanemode_active_outlined,
+                            color: Colors.grey,
+                            size: 24,
+                          ),
                         ),
                       ),
               ),
@@ -220,25 +252,35 @@ class ConsumerHomeView extends StatelessWidget {
                 icon: Icons.play_circle_outline,
                 text: 'Reels',
                 leading: state.currentNavIndex == 2
-                    ? Image.asset(
-                        'assets/images/reels_nav.png',
-                        width: 24,
-                        height: 24,
-                        color: AppColors.white,
+                    ? CustomImageWidget(
+                        imagePath: 'assets/images/reels_nav.png',
+                        width: 30,
+                        height: 30,
+                        color: Colors.grey,
+                        errorWidget: Icon(
+                          Icons.play_circle,
+                          color: Theme.of(context).colorScheme.onPrimary,
+                          size: 24,
+                        ),
                       )
                     : Container(
-                        width: 40,
-                        height: 40,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFE0E0E0),
+                        width: 50,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.surfaceVariant,
                           shape: BoxShape.circle,
                         ),
                         alignment: Alignment.center,
-                        child: Image.asset(
-                          'assets/images/reels_nav.png',
+                        child: CustomImageWidget(
+                          imagePath: 'assets/images/reels_nav.png',
                           width: 24,
                           height: 24,
-                          color: Colors.grey.shade600,
+                          color: Colors.grey,
+                          errorWidget: Icon(
+                            Icons.play_circle_outline,
+                            color: Colors.grey,
+                            size: 24,
+                          ),
                         ),
                       ),
               ),
