@@ -1,5 +1,9 @@
 import 'package:dejurebook/pages/settings/my_account_screen.dart';
+import 'package:dejurebook/pages/on_boarding/on_boarding_page.dart';
+import 'package:dejurebook/bloc/auth_bloc.dart';
+import 'package:dejurebook/services/auth_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({Key? key}) : super(key: key);
@@ -49,33 +53,44 @@ class SettingsScreen extends StatelessWidget {
                 _buildMenuItem(context, 'Terms of Service'),
                 _buildMenuItem(context, 'About deJureBook'),
                 _buildMenuItem(context, 'Share App'),
-                _buildMenuItem(context, 'Logout'),
+                _buildMenuItem(
+                  context,
+                  'Logout',
+                  onTap: () => _showLogoutDialog(context),
+                ),
               ],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: const [
-                Text(
-                  'Signed in as username@gmail.com',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
+          BlocBuilder<AuthBloc, AuthState>(
+            builder: (context, state) {
+              final user = AuthService.currentUser;
+              return Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    Text(
+                      user != null
+                          ? 'Signed in as ${user.email}'
+                          : 'Not signed in',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      'Version 0.0.1',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black54,
+                      ),
+                    ),
+                  ],
                 ),
-                SizedBox(height: 4),
-                Text(
-                  'Version 0.0.1',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black54,
-                  ),
-                ),
-              ],
-            ),
+              );
+            },
           ),
         ],
       ),
@@ -101,6 +116,62 @@ class SettingsScreen extends StatelessWidget {
             color: Colors.black87,
           ),
         ),
+      ),
+    );
+  }
+
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Logout'),
+        content: const Text('Are you sure you want to logout?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          BlocListener<AuthBloc, AuthState>(
+            listener: (context, state) {
+              if (state is AuthUnauthenticated) {
+                Navigator.of(context).pop(); // Close dialog
+                Navigator.of(context).pop(); // Close settings screen
+                // Navigate to onboarding screen
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(
+                    builder: (context) => const OnBoardingPage(),
+                  ),
+                  (route) => false,
+                );
+              } else if (state is AuthError) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(state.message),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+            child: BlocBuilder<AuthBloc, AuthState>(
+              builder: (context, state) {
+                return ElevatedButton(
+                  onPressed: state is AuthLoading
+                      ? null
+                      : () {
+                          context.read<AuthBloc>().add(AuthSignOutRequested());
+                        },
+                  child: state is AuthLoading
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('Logout'),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

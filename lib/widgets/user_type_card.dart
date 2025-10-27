@@ -38,7 +38,9 @@ class UserTypeCard extends StatelessWidget {
                 right: ResponsiveUtils.getResponsiveSpacing(context, 20),
               ),
               decoration: BoxDecoration(
-                color: const Color(0xFF252525), // Dark gray color
+                color: isSelected
+                    ? Colors.black.withOpacity(0.8)
+                    : Colors.black.withOpacity(0.7), // Dark gray color
                 borderRadius: BorderRadius.circular(
                   ResponsiveUtils.getResponsiveSpacing(context, 18),
                 ),
@@ -52,7 +54,7 @@ class UserTypeCard extends StatelessWidget {
                 ],
                 border: isSelected
                     ? Border.all(
-                        color: Colors.white,
+                        color: Colors.transparent,
                         width: 2,
                       )
                     : null,

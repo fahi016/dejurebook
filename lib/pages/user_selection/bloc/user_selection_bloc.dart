@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dejurebook/services/profile_service.dart';
 import 'user_selection_event.dart';
 import 'user_selection_state.dart';
 
@@ -15,12 +16,37 @@ class UserSelectionBloc extends Bloc<UserSelectionEvent, UserSelectionState> {
     emit(state.copyWith(selectedUserType: event.userType));
   }
 
-  void _onContinue(
+  Future<void> _onContinue(
     ContinueEvent event,
     Emitter<UserSelectionState> emit,
-  ) {
+  ) async {
     if (state.canContinue) {
-      emit(state.copyWith(isCompleted: true));
+      try {
+        // Save user type to profile
+        final userTypeString =
+            _convertUserTypeToString(state.selectedUserType!);
+        await ProfileService.updateCurrentUserProfile(
+          userType: userTypeString,
+        );
+
+        emit(state.copyWith(isCompleted: true));
+      } catch (e) {
+        // Handle error - user type save failed but continue anyway
+        emit(state.copyWith(isCompleted: true));
+      }
+    }
+  }
+
+  String _convertUserTypeToString(UserType userType) {
+    switch (userType) {
+      case UserType.consumer:
+        return 'consumer';
+      case UserType.lawyer:
+        return 'lawyer';
+      case UserType.lawStudent:
+        return 'law_student';
+      case UserType.other:
+        return 'other';
     }
   }
 }

@@ -4,10 +4,17 @@ import 'package:dejurebook/pages/on_boarding/bloc/on_boarding_bloc.dart';
 import 'package:dejurebook/constants/app_theme.dart';
 import 'package:dejurebook/pages/user_selection/bloc/user_selection_bloc.dart';
 import 'package:dejurebook/pages/ai_chat/bloc/ai_chat_bloc.dart';
+import 'package:dejurebook/bloc/auth_bloc.dart';
+import 'package:dejurebook/services/supabase_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Supabase
+  await SupabaseConfig.initialize();
+
   // Optional: Set up BLoC observer for debugging
   Bloc.observer = SimpleBlocObserver();
   runApp(const MyApp());
@@ -63,12 +70,9 @@ class MyApp extends StatelessWidget {
         BlocProvider<AiChatBloc>(
           create: (_) => AiChatBloc(),
         ),
-
-        // Add more BLoCs here as your app grows
-        // Example:
-        // BlocProvider<AuthBloc>(
-        //   create: (context) => AuthBloc(),
-        // ),
+        BlocProvider<AuthBloc>(
+          create: (context) => AuthBloc()..add(AuthCheckRequested()),
+        ),
         // BlocProvider<ThemeBloc>(
         //   create: (context) => ThemeBloc(),
         // ),

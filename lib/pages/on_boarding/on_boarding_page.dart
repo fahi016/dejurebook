@@ -39,7 +39,7 @@ class _OnBoardingPageState extends State<OnBoardingPage> {
       },
       builder: (context, state) {
         // Sync PageController with BLoC state
-        if (_pageController.hasClients && 
+        if (_pageController.hasClients &&
             _pageController.page?.round() != state.currentPage) {
           _pageController.animateToPage(
             state.currentPage,

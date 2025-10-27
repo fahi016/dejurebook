@@ -1,7 +1,38 @@
 import 'package:flutter/material.dart';
+import 'package:dejurebook/services/auth_service.dart';
+import 'package:dejurebook/services/profile_service.dart';
+import 'package:dejurebook/models/user_profile.dart';
 
-class MyAccountScreen extends StatelessWidget {
+class MyAccountScreen extends StatefulWidget {
   const MyAccountScreen({Key? key}) : super(key: key);
+
+  @override
+  State<MyAccountScreen> createState() => _MyAccountScreenState();
+}
+
+class _MyAccountScreenState extends State<MyAccountScreen> {
+  UserProfile? _userProfile;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserProfile();
+  }
+
+  Future<void> _loadUserProfile() async {
+    try {
+      final profile = await ProfileService.getCurrentUserProfile();
+      setState(() {
+        _userProfile = profile;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,45 +56,69 @@ class MyAccountScreen extends StatelessWidget {
         ),
         centerTitle: true,
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView(
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
               children: [
-                _buildAccountItem('Name', 'Md Avase'),
-                _buildAccountItem('Gender', 'Male'),
-                _buildAccountItem('Date of birth', '07/07/2002'),
-                _buildAccountItem('Email', 'avase@gmail.com'),
-                _buildAccountItem('Phone', '9999999999'),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: const [
-                Text(
-                  'Signed in as username@gmail.com',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                Expanded(
+                  child: ListView(
+                    children: [
+                      _buildAccountItem(
+                        'Name',
+                        _userProfile?.fullName ?? 'Not provided',
+                      ),
+                      _buildAccountItem(
+                        'Email',
+                        AuthService.currentUser?.email ?? 'Not provided',
+                      ),
+                      _buildAccountItem(
+                        'Phone',
+                        AuthService.currentUser?.userMetadata?['phone'] ??
+                            'Not provided',
+                      ),
+                      _buildAccountItem(
+                        'Profession',
+                        _userProfile?.profession ?? 'Not specified',
+                      ),
+                      _buildAccountItem(
+                        'User Type',
+                        _getUserTypeDisplayName(_userProfile?.userType),
+                      ),
+                      _buildAccountItem(
+                        'Member Since',
+                        _userProfile?.createdAt != null
+                            ? '${_userProfile!.createdAt!.month}/${_userProfile!.createdAt!.year}'
+                            : 'Not available',
+                      ),
+                    ],
                   ),
                 ),
-                SizedBox(height: 4),
-                Text(
-                  'Version 0.0.1',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black54,
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      Text(
+                        'Signed in as ${AuthService.currentUser?.email ?? 'Unknown'}',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        'Version 0.0.1',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black54,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -97,5 +152,19 @@ class MyAccountScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String _getUserTypeDisplayName(String? userType) {
+    if (userType == null) return 'Not specified';
+    switch (userType) {
+      case 'consumer':
+        return 'Consumer';
+      case 'lawyer':
+        return 'Lawyer';
+      case 'law_student':
+        return 'Law Student';
+      default:
+        return userType;
+    }
   }
 }

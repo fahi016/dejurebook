@@ -7,6 +7,9 @@ import 'package:dejurebook/pages/profile/bloc/profile_state.dart';
 import 'package:dejurebook/pages/settings/settings_screen.dart';
 import 'package:dejurebook/pages/followers/followers_page.dart';
 import 'package:dejurebook/pages/messages/message_screen.dart';
+import 'package:dejurebook/services/auth_service.dart';
+import 'package:dejurebook/services/profile_service.dart';
+import 'package:dejurebook/models/user_profile.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -20,8 +23,39 @@ class ProfilePage extends StatelessWidget {
   }
 }
 
-class ProfileView extends StatelessWidget {
+class ProfileView extends StatefulWidget {
   const ProfileView({super.key});
+
+  @override
+  State<ProfileView> createState() => _ProfileViewState();
+}
+
+class _ProfileViewState extends State<ProfileView> {
+  UserProfile? _userProfile;
+  bool _isLoadingProfile = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserProfile();
+  }
+
+  Future<void> _loadUserProfile() async {
+    try {
+      final profile = await ProfileService.getCurrentUserProfile();
+      debugPrint(
+          'Profile loaded: ${profile?.fullName}, ${profile?.profession}');
+      setState(() {
+        _userProfile = profile;
+        _isLoadingProfile = false;
+      });
+    } catch (e) {
+      debugPrint('Error loading profile: $e');
+      setState(() {
+        _isLoadingProfile = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -143,42 +177,47 @@ class ProfileView extends StatelessWidget {
 
                 // User Details
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        state.name,
-                        style: TextStyle(
-                          fontSize: ResponsiveUtils.getResponsiveFontSize(
-                              context, 24),
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.onBackground,
+                  child: _isLoadingProfile
+                      ? const Center(child: CircularProgressIndicator())
+                      : Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _userProfile?.fullName ?? state.name,
+                              style: TextStyle(
+                                fontSize: ResponsiveUtils.getResponsiveFontSize(
+                                    context, 24),
+                                fontWeight: FontWeight.bold,
+                                color:
+                                    Theme.of(context).colorScheme.onBackground,
+                              ),
+                            ),
+                            SizedBox(
+                                height: ResponsiveUtils.getResponsiveSpacing(
+                                    context, 8)),
+                            Text(
+                              _userProfile?.profession ?? state.profession,
+                              style: TextStyle(
+                                fontSize: ResponsiveUtils.getResponsiveFontSize(
+                                    context, 16),
+                                color:
+                                    Theme.of(context).colorScheme.onBackground,
+                              ),
+                            ),
+                            SizedBox(
+                                height: ResponsiveUtils.getResponsiveSpacing(
+                                    context, 4)),
+                            Text(
+                              AuthService.currentUser?.email ?? '',
+                              style: TextStyle(
+                                fontSize: ResponsiveUtils.getResponsiveFontSize(
+                                    context, 16),
+                                color:
+                                    Theme.of(context).colorScheme.onBackground,
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                      SizedBox(
-                          height:
-                              ResponsiveUtils.getResponsiveSpacing(context, 8)),
-                      Text(
-                        state.location,
-                        style: TextStyle(
-                          fontSize: ResponsiveUtils.getResponsiveFontSize(
-                              context, 16),
-                          color: Theme.of(context).colorScheme.onBackground,
-                        ),
-                      ),
-                      SizedBox(
-                          height:
-                              ResponsiveUtils.getResponsiveSpacing(context, 4)),
-                      Text(
-                        state.profession,
-                        style: TextStyle(
-                          fontSize: ResponsiveUtils.getResponsiveFontSize(
-                              context, 16),
-                          color: Theme.of(context).colorScheme.onBackground,
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
               ],
             ),
@@ -187,7 +226,9 @@ class ProfileView extends StatelessWidget {
 
             // Join Date
             Text(
-              'Joined ${state.joinDate}',
+              _userProfile?.createdAt != null
+                  ? 'Joined ${_getFormattedDate(_userProfile!.createdAt!)}'
+                  : 'Joined ${state.joinDate}',
               style: TextStyle(
                 fontSize: ResponsiveUtils.getResponsiveFontSize(context, 14),
                 color:
@@ -300,5 +341,23 @@ class ProfileView extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _getFormattedDate(DateTime date) {
+    final months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
+    ];
+    return '${months[date.month - 1]} ${date.year}';
   }
 }

@@ -29,15 +29,21 @@ class ConsumerHomeView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ConsumerBloc, ConsumerState>(
-      builder: (context, state) {
-        return Scaffold(
-          backgroundColor: Theme.of(context).colorScheme.background,
-          appBar: _buildAppBar(context),
-          body: _buildBody(state),
-          bottomNavigationBar: _buildBottomNav(context, state),
-        );
+    return WillPopScope(
+      onWillPop: () async {
+        // Close the app when back button is pressed
+        return true;
       },
+      child: BlocBuilder<ConsumerBloc, ConsumerState>(
+        builder: (context, state) {
+          return Scaffold(
+            backgroundColor: Theme.of(context).colorScheme.background,
+            appBar: _buildAppBar(context),
+            body: _buildBody(state),
+            bottomNavigationBar: _buildBottomNav(context, state),
+          );
+        },
+      ),
     );
   }
 
