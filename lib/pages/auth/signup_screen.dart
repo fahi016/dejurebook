@@ -259,135 +259,103 @@ class _PhoneLoginDialogState extends State<PhoneLoginDialog> {
           );
         }
       },
-      child: Dialog(
-        insetPadding: EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: MediaQuery.of(context).viewInsets.bottom > 0 ? 80 : 100,
-        ),
-        child: Container(
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height * 0.7,
-          ),
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    _isSignUp ? 'Sign Up' : 'Sign In',
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  TextFormField(
-                    controller: _emailController,
-                    decoration: const InputDecoration(
-                      labelText: 'Email',
-                      border: OutlineInputBorder(),
-                    ),
-                    keyboardType: TextInputType.emailAddress,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your email';
-                      }
-                      if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                          .hasMatch(value)) {
-                        return 'Please enter a valid email';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _passwordController,
-                    decoration: const InputDecoration(
-                      labelText: 'Password',
-                      border: OutlineInputBorder(),
-                    ),
-                    obscureText: true,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your password';
-                      }
-                      if (value.length < 6) {
-                        return 'Password must be at least 6 characters';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 24),
-                  // Actions
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      TextButton(
-                        onPressed: () {
-                          setState(() {
-                            _isSignUp = !_isSignUp;
-                          });
-                        },
-                        child: Text(_isSignUp
-                            ? 'Already have an account? Sign In'
-                            : 'Don\'t have an account? Sign Up'),
-                      ),
-                      const SizedBox(width: 8),
-                      BlocBuilder<AuthBloc, AuthState>(
-                        builder: (context, state) {
-                          return ElevatedButton(
-                            onPressed: state is AuthLoading
-                                ? null
-                                : () {
-                                    if (_formKey.currentState!.validate()) {
-                                      if (_isSignUp) {
-                                        // Navigate to complete profile screen for new users
-                                        Navigator.of(context).pop();
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                CompleteProfileScreen(
-                                              email:
-                                                  _emailController.text.trim(),
-                                              password:
-                                                  _passwordController.text,
-                                            ),
-                                          ),
-                                        );
-                                      } else {
-                                        context.read<AuthBloc>().add(
-                                              AuthSignInRequested(
-                                                email: _emailController.text
-                                                    .trim(),
-                                                password:
-                                                    _passwordController.text,
-                                              ),
-                                            );
-                                      }
-                                    }
-                                  },
-                            child: state is AuthLoading
-                                ? const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                        strokeWidth: 2),
-                                  )
-                                : Text(_isSignUp ? 'Sign Up' : 'Sign In'),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ],
+      child: AlertDialog(
+        title: Text(_isSignUp ? 'Sign Up' : 'Sign In'),
+        content: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: _emailController,
+                decoration: const InputDecoration(
+                  labelText: 'Email',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.emailAddress,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your email';
+                  }
+                  if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+                      .hasMatch(value)) {
+                    return 'Please enter a valid email';
+                  }
+                  return null;
+                },
               ),
-            ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _passwordController,
+                decoration: const InputDecoration(
+                  labelText: 'Password',
+                  border: OutlineInputBorder(),
+                ),
+                obscureText: true,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your password';
+                  }
+                  if (value.length < 6) {
+                    return 'Password must be at least 6 characters';
+                  }
+                  return null;
+                },
+              ),
+            ],
           ),
         ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              setState(() {
+                _isSignUp = !_isSignUp;
+              });
+            },
+            child: Text(_isSignUp
+                ? 'Already have an account? Sign In'
+                : 'Don\'t have an account? Sign Up'),
+          ),
+          BlocBuilder<AuthBloc, AuthState>(
+            builder: (context, state) {
+              return ElevatedButton(
+                onPressed: state is AuthLoading
+                    ? null
+                    : () {
+                        if (_formKey.currentState!.validate()) {
+                          if (_isSignUp) {
+                            // Navigate to complete profile screen for new users
+                            Navigator.of(context).pop();
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => CompleteProfileScreen(
+                                  email: _emailController.text.trim(),
+                                  password: _passwordController.text,
+                                ),
+                              ),
+                            );
+                          } else {
+                            context.read<AuthBloc>().add(
+                                  AuthSignInRequested(
+                                    email: _emailController.text.trim(),
+                                    password: _passwordController.text,
+                                  ),
+                                );
+                          }
+                        }
+                      },
+                child: state is AuthLoading
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Text(_isSignUp ? 'Sign Up' : 'Sign In'),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
