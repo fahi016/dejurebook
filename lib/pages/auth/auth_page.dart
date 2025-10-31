@@ -44,13 +44,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   void _handlePhoneLogin(BuildContext context) {
-    _showPhoneLoginDialog(context);
-  }
-
-  void _showPhoneLoginDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => const PhoneLoginDialog(),
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const SignInPage(isSignUp: false),
+      ),
     );
   }
 
@@ -201,18 +199,27 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 }
 
-class PhoneLoginDialog extends StatefulWidget {
-  const PhoneLoginDialog({super.key});
+class SignInPage extends StatefulWidget {
+  final bool isSignUp;
+
+  const SignInPage({super.key, this.isSignUp = false});
 
   @override
-  State<PhoneLoginDialog> createState() => _PhoneLoginDialogState();
+  State<SignInPage> createState() => _SignInPageState();
 }
 
-class _PhoneLoginDialogState extends State<PhoneLoginDialog> {
+class _SignInPageState extends State<SignInPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  bool _obscurePassword = true;
   bool _isSignUp = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _isSignUp = widget.isSignUp;
+  }
 
   @override
   void dispose() {
@@ -221,29 +228,36 @@ class _PhoneLoginDialogState extends State<PhoneLoginDialog> {
     super.dispose();
   }
 
+  void _togglePasswordVisibility() {
+    setState(() {
+      _obscurePassword = !_obscurePassword;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) async {
         if (state is AuthAuthenticated) {
-          Navigator.of(context).pop();
-
           // Check if user has a user_type set
           final profile = await ProfileService.getCurrentUserProfile();
           if (profile?.userType != null) {
             // User already has a type, go to home page
+            if (!mounted) return;
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => const ConsumerHomePage()),
             );
           } else {
             // User needs to select type
+            if (!mounted) return;
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => const UserSelection()),
             );
           }
         } else if (state is AuthError) {
+          if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.message),
@@ -251,6 +265,7 @@ class _PhoneLoginDialogState extends State<PhoneLoginDialog> {
             ),
           );
         } else if (state is AuthSuccess) {
+          if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.message),
@@ -259,103 +274,158 @@ class _PhoneLoginDialogState extends State<PhoneLoginDialog> {
           );
         }
       },
-      child: AlertDialog(
-        title: Text(_isSignUp ? 'Sign Up' : 'Sign In'),
-        content: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextFormField(
-                controller: _emailController,
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                  border: OutlineInputBorder(),
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          leading: IconButton(
+            icon:
+                const Icon(Icons.arrow_back_ios, color: Colors.black, size: 20),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+          title: Text(
+            _isSignUp ? 'Sign Up' : 'Sign In',
+            style: const TextStyle(
+              color: Colors.black,
+              fontSize: 20,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          centerTitle: true,
+        ),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: 20),
+
+                // Email Field
+                TextFormField(
+                  controller: _emailController,
+                  decoration: const InputDecoration(
+                    labelText: 'Email',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.email_outlined),
+                  ),
+                  keyboardType: TextInputType.emailAddress,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your email';
+                    }
+                    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+                        .hasMatch(value)) {
+                      return 'Please enter a valid email';
+                    }
+                    return null;
+                  },
                 ),
-                keyboardType: TextInputType.emailAddress,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your email';
-                  }
-                  if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                      .hasMatch(value)) {
-                    return 'Please enter a valid email';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _passwordController,
-                decoration: const InputDecoration(
-                  labelText: 'Password',
-                  border: OutlineInputBorder(),
+                const SizedBox(height: 16),
+
+                // Password Field with Eye Icon
+                TextFormField(
+                  controller: _passwordController,
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                    border: const OutlineInputBorder(),
+                    prefixIcon: const Icon(Icons.lock_outlined),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                      ),
+                      onPressed: _togglePasswordVisibility,
+                    ),
+                  ),
+                  obscureText: _obscurePassword,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your password';
+                    }
+                    if (_isSignUp && value.length < 6) {
+                      return 'Password must be at least 6 characters';
+                    }
+                    return null;
+                  },
                 ),
-                obscureText: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your password';
-                  }
-                  if (value.length < 6) {
-                    return 'Password must be at least 6 characters';
-                  }
-                  return null;
-                },
-              ),
-            ],
+                const SizedBox(height: 32),
+
+                // Submit Button
+                BlocBuilder<AuthBloc, AuthState>(
+                  builder: (context, state) {
+                    return ElevatedButton(
+                      onPressed: state is AuthLoading
+                          ? null
+                          : () {
+                              if (_formKey.currentState!.validate()) {
+                                if (_isSignUp) {
+                                  // Navigate to complete profile screen for new users
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          CompleteProfileScreen(
+                                        email: _emailController.text.trim(),
+                                        password: _passwordController.text,
+                                      ),
+                                    ),
+                                  );
+                                } else {
+                                  context.read<AuthBloc>().add(
+                                        AuthSignInRequested(
+                                          email: _emailController.text.trim(),
+                                          password: _passwordController.text,
+                                        ),
+                                      );
+                                }
+                              }
+                            },
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: state is AuthLoading
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : Text(
+                              _isSignUp ? 'Sign Up' : 'Sign In',
+                              style: const TextStyle(fontSize: 16),
+                            ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 16),
+
+                // Toggle between Sign In and Sign Up
+                TextButton(
+                  onPressed: () {
+                    setState(() {
+                      _isSignUp = !_isSignUp;
+                    });
+                  },
+                  child: Text(
+                    _isSignUp
+                        ? 'Already have an account? Sign In'
+                        : 'Don\'t have an account? Sign Up',
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              setState(() {
-                _isSignUp = !_isSignUp;
-              });
-            },
-            child: Text(_isSignUp
-                ? 'Already have an account? Sign In'
-                : 'Don\'t have an account? Sign Up'),
-          ),
-          BlocBuilder<AuthBloc, AuthState>(
-            builder: (context, state) {
-              return ElevatedButton(
-                onPressed: state is AuthLoading
-                    ? null
-                    : () {
-                        if (_formKey.currentState!.validate()) {
-                          if (_isSignUp) {
-                            // Navigate to complete profile screen for new users
-                            Navigator.of(context).pop();
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => CompleteProfileScreen(
-                                  email: _emailController.text.trim(),
-                                  password: _passwordController.text,
-                                ),
-                              ),
-                            );
-                          } else {
-                            context.read<AuthBloc>().add(
-                                  AuthSignInRequested(
-                                    email: _emailController.text.trim(),
-                                    password: _passwordController.text,
-                                  ),
-                                );
-                          }
-                        }
-                      },
-                child: state is AuthLoading
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : Text(_isSignUp ? 'Sign Up' : 'Sign In'),
-              );
-            },
-          ),
-        ],
       ),
     );
   }

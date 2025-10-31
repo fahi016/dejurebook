@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dejurebook/bloc/auth_bloc.dart';
-import 'package:dejurebook/pages/auth/signup_screen.dart';
+import 'package:dejurebook/pages/auth/auth_page.dart';
 
 class AuthWrapper extends StatelessWidget {
   final Widget child;

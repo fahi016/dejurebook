@@ -1,4 +1,4 @@
-import 'package:dejurebook/pages/auth/signup_screen.dart';
+import 'package:dejurebook/pages/auth/auth_page.dart';
 import 'package:dejurebook/pages/on_boarding/bloc/on_boarding_bloc.dart';
 import 'package:dejurebook/pages/on_boarding/bloc/on_boarding_event.dart';
 import 'package:dejurebook/pages/on_boarding/bloc/on_boarding_state.dart';
