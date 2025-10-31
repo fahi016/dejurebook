@@ -1,3 +1,4 @@
+import 'package:dejurebook/services/gemini_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dejurebook/models/ai_chat_model.dart';
 import 'package:dejurebook/pages/ai_chat/bloc/ai_chat_event.dart';
@@ -38,11 +39,11 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     emit(AiChatLoaded(messages: initialMessages));
   }
 
-  void _onSendMessage(SendMessageEvent event, Emitter<AiChatState> emit) {
+  void _onSendMessage(SendMessageEvent event, Emitter<AiChatState> emit) async {
     if (state is AiChatLoaded) {
       final currentState = state as AiChatLoaded;
 
-      // Add user message
+      // 1️⃣ Add the user's message and a placeholder AI message immediately
       final userMessage = AiChatMessage(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         content: event.message,
@@ -50,33 +51,55 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
         timestamp: DateTime.now(),
       );
 
-      final updatedMessages = [...currentState.messages, userMessage];
+      final aiMessageId = "ai-${DateTime.now().millisecondsSinceEpoch}";
+      final aiPlaceholder = AiChatMessage(
+        id: aiMessageId,
+        content: "",
+        isUser: false,
+        timestamp: DateTime.now(),
+      );
+
+      List<AiChatMessage> messagesWithPlaceholder = [
+        ...currentState.messages,
+        userMessage,
+        aiPlaceholder,
+      ];
 
       emit(currentState.copyWith(
-        messages: updatedMessages,
-        isTyping: true,
-      ));
+          messages: messagesWithPlaceholder, isTyping: true));
 
-      // Simulate AI response after a delay
-      Future.delayed(const Duration(seconds: 2), () {
-        if (state is AiChatLoaded) {
-          final aiMessage = AiChatMessage(
-            id: DateTime.now().millisecondsSinceEpoch.toString(),
-            content: _generateAiResponse(event.message),
+      // 2️⃣ Start streaming response from Gemini
+      final geminiService = GeminiStreamService();
+      String fullResponse = "";
+
+      try {
+        await for (final chunk in geminiService.streamResponse(event.message)) {
+          fullResponse += chunk;
+
+          // Update the last AI message content in place
+          final updatedList = List<AiChatMessage>.from(messagesWithPlaceholder);
+          final lastIndex = updatedList.length - 1;
+          updatedList[lastIndex] = AiChatMessage(
+            id: aiMessageId,
+            content: fullResponse,
             isUser: false,
             timestamp: DateTime.now(),
-            sources: 'Legal Database',
-            suggestedActions: ['What can i do?', 'Tell me more', 'Get help'],
           );
 
-          final finalMessages = [...updatedMessages, aiMessage];
-
           emit(currentState.copyWith(
-            messages: finalMessages,
-            isTyping: false,
+            messages: updatedList,
+            isTyping: true,
           ));
+
+          // Keep reference for next iteration
+          messagesWithPlaceholder = updatedList;
         }
-      });
+
+        // 3️⃣ Once streaming finishes, mark typing as false
+        emit((state as AiChatLoaded).copyWith(isTyping: false));
+      } catch (e) {
+        emit(AiChatError(message: '⚠️ Failed to stream AI response: $e'));
+      }
     }
   }
 

@@ -80,7 +80,12 @@ class _AiChatPageState extends State<AiChatPage> {
         ),
         automaticallyImplyLeading: true,
       ),
-      body: BlocBuilder<AiChatBloc, AiChatState>(
+      body: BlocConsumer<AiChatBloc, AiChatState>(
+        listener: (context, state) {
+          if (state is AiChatLoaded) {
+            _scrollToBottom();
+          }
+        },
         builder: (context, state) {
           if (state is AiChatLoading) {
             return Center(
