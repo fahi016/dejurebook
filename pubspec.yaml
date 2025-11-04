@@ -46,6 +46,12 @@ dependencies:
   flutter_dotenv: ^6.0.0
   http: ^1.5.0
   flutter_markdown: ^0.7.2
+  cloudinary_flutter: ^1.0.0
+  cloudinary_url_gen: ^1.0.0
+  
+  # Video playback for reels
+  video_player: ^2.9.1
+  chewie: ^1.8.5
 
 dev_dependencies:
   flutter_test:

@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dejurebook/services/cloudinary_service.dart';
 import 'consumer_event.dart';
 import 'consumer_state.dart';
 
@@ -59,28 +60,53 @@ class ConsumerBloc extends Bloc<ConsumerEvent, ConsumerState> {
       LoadReelsDataEvent event, Emitter<ConsumerState> emit) async {
     emit(state.copyWith(isLoading: true, error: null));
 
-    // Mock reels data
-    final mockReels = List.generate(
-      5,
-      (index) => ReelItem(
-        id: 'reel_$index',
-        videoUrl: 'https://example.com/reel_$index.mp4',
-        username: '@Username',
-        caption: 'Hello this is how you file a case on your la...',
-        likes: 100 + index * 10,
-        comments: 79,
-        profileImageUrl: 'assets/images/profile_picture_image.png',
-        isLiked: false,
-        isFollowing: false,
-      ),
-    );
+    try {
+      // Fetch video URLs from Cloudinary (already shuffled randomly)
+      final videoUrls = await CloudinaryService.getReelsVideoUrls();
 
-    await Future.delayed(const Duration(milliseconds: 500));
-    if (!isClosed) {
-      emit(state.copyWith(
-        reels: mockReels,
-        isLoading: false,
-      ));
+      if (videoUrls.isEmpty) {
+        if (!isClosed) {
+          emit(state.copyWith(
+            isLoading: false,
+            error: 'No videos available',
+          ));
+        }
+        return;
+      }
+
+      // Create ReelItem objects from Cloudinary video URLs
+      // Videos are already in random order from CloudinaryService
+      final reels = videoUrls.asMap().entries.map((entry) {
+        final index = entry.key;
+        final videoUrl = entry.value;
+        
+        return ReelItem(
+          id: 'reel_${index}_${DateTime.now().millisecondsSinceEpoch}',
+          videoUrl: videoUrl,
+          username: '@DejureBook',
+          caption: 'Legal insights and knowledge for everyone',
+          likes: 100 + (index * 10),
+          comments: 50 + (index * 5),
+          profileImageUrl: 'assets/images/profile_picture_image.png',
+          isLiked: false,
+          isFollowing: false,
+        );
+      }).toList();
+
+      if (!isClosed) {
+        emit(state.copyWith(
+          reels: reels,
+          isLoading: false,
+          error: null,
+        ));
+      }
+    } catch (e) {
+      if (!isClosed) {
+        emit(state.copyWith(
+          isLoading: false,
+          error: 'Failed to load reels: ${e.toString()}',
+        ));
+      }
     }
   }
 

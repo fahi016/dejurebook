@@ -5,6 +5,8 @@ import 'package:dejurebook/constants/responsive_utils.dart';
 import 'package:dejurebook/pages/consumer/bloc/consumer_bloc.dart';
 import 'package:dejurebook/pages/consumer/bloc/consumer_event.dart';
 import 'package:dejurebook/pages/consumer/bloc/consumer_state.dart';
+import 'package:video_player/video_player.dart';
+import 'package:chewie/chewie.dart';
 
 class ReelsPage extends StatelessWidget {
   final int initialIndex;
@@ -37,6 +39,7 @@ class ReelsPageView extends StatefulWidget {
 
 class _ReelsPageViewState extends State<ReelsPageView> {
   late PageController _pageController;
+  int _currentIndex = 0;
 
   @override
   void initState() {
@@ -73,10 +76,14 @@ class _ReelsPageViewState extends State<ReelsPageView> {
             itemCount: state.reels.length,
             itemBuilder: (context, index) {
               final reel = state.reels[index];
-              return _buildReelItem(context, reel);
+              final isActive = index == _currentIndex;
+              return _buildReelItem(context, reel, isActive: isActive);
             },
             onPageChanged: (index) {
               context.read<ConsumerBloc>().add(ChangeReelEvent(index));
+              setState(() {
+                _currentIndex = index;
+              });
             },
           ),
         );
@@ -84,7 +91,8 @@ class _ReelsPageViewState extends State<ReelsPageView> {
     );
   }
 
-  Widget _buildReelItem(BuildContext context, ReelItem reel) {
+  Widget _buildReelItem(BuildContext context, ReelItem reel,
+      {required bool isActive}) {
     final screenWidth = ResponsiveUtils.getScreenWidth(context);
     final screenHeight = ResponsiveUtils.getScreenHeight(context);
 
@@ -92,59 +100,13 @@ class _ReelsPageViewState extends State<ReelsPageView> {
       color: AppColors.darkGrey,
       child: Stack(
         children: [
-          // Video/Image placeholder
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: ResponsiveUtils.isMobile(context)
-                      ? screenWidth * 0.6
-                      : 300,
-                  height: ResponsiveUtils.isMobile(context)
-                      ? screenHeight * 0.4
-                      : 400,
-                  decoration: BoxDecoration(
-                    color: AppColors.grey,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      // Video thumbnail placeholder (illustration)
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
-                        child: Image.asset(
-                          'assets/images/law_image.png',
-                          fit: BoxFit.cover,
-                          width: double.infinity,
-                          height: double.infinity,
-                        ),
-                      ),
-                      // Play button overlay
-                      Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: AppColors.black.withOpacity(0.8),
-                        ),
-                        padding: const EdgeInsets.all(20),
-                        child: const Icon(
-                          Icons.play_arrow,
-                          color: AppColors.white,
-                          size: 50,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+          // Video player
+          Positioned.fill(
+            child: _ReelVideoPlayer(
+              url: reel.videoUrl,
+              width: ResponsiveUtils.isMobile(context) ? screenWidth : 400,
+              height: ResponsiveUtils.isMobile(context) ? screenHeight : 700,
+              play: isActive,
             ),
           ),
 
@@ -272,9 +234,9 @@ class _ReelsPageViewState extends State<ReelsPageView> {
                           },
                           child: Container(
                             margin: EdgeInsets.only(
-                              right:
-                                  ResponsiveUtils.isMobile(context) ? 200 : 0
-                            ),
+                                right: ResponsiveUtils.isMobile(context)
+                                    ? 200
+                                    : 0),
                             padding: EdgeInsets.symmetric(
                               horizontal: ResponsiveUtils.getResponsiveSpacing(
                                   context, 12),
@@ -367,6 +329,123 @@ class _ReelsPageViewState extends State<ReelsPageView> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ReelVideoPlayer extends StatefulWidget {
+  final String url;
+  final double width;
+  final double height;
+  final bool play;
+
+  const _ReelVideoPlayer({
+    required this.url,
+    required this.width,
+    required this.height,
+    required this.play,
+  });
+
+  @override
+  State<_ReelVideoPlayer> createState() => _ReelVideoPlayerState();
+}
+
+class _ReelVideoPlayerState extends State<_ReelVideoPlayer> {
+  VideoPlayerController? _vpController;
+  ChewieController? _chewieController;
+  bool _initError = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initControllers();
+  }
+
+  Future<void> _initControllers() async {
+    try {
+      final controller =
+          VideoPlayerController.networkUrl(Uri.parse(widget.url));
+      await controller.initialize();
+      controller.setLooping(true);
+      _vpController = controller;
+      _chewieController = ChewieController(
+        videoPlayerController: controller,
+        autoPlay: widget.play,
+        looping: true,
+        showControls: false,
+        allowFullScreen: false,
+        allowMuting: true,
+        aspectRatio: controller.value.aspectRatio == 0
+            ? 9 / 16
+            : controller.value.aspectRatio,
+      );
+      if (mounted) setState(() {});
+      _syncPlayback();
+    } catch (_) {
+      _initError = true;
+      if (mounted) setState(() {});
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant _ReelVideoPlayer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.url != widget.url) {
+      _disposeControllers();
+      _initControllers();
+    } else if (oldWidget.play != widget.play) {
+      _syncPlayback();
+    }
+  }
+
+  void _syncPlayback() {
+    final c = _vpController;
+    if (c == null) return;
+    if (widget.play) {
+      c.play();
+    } else {
+      c.pause();
+    }
+  }
+
+  @override
+  void dispose() {
+    _disposeControllers();
+    super.dispose();
+  }
+
+  void _disposeControllers() {
+    _chewieController?.dispose();
+    _vpController?.dispose();
+    _chewieController = null;
+    _vpController = null;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_initError) {
+      return Center(
+        child: Icon(
+          Icons.error_outline,
+          color: AppColors.white,
+          size: 40,
+        ),
+      );
+    }
+    if (_vpController == null || !_vpController!.value.isInitialized) {
+      return const Center(
+        child: CircularProgressIndicator(color: AppColors.white),
+      );
+    }
+    return Center(
+      child: SizedBox(
+        width: widget.width,
+        height: widget.height,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: Chewie(controller: _chewieController!),
+        ),
       ),
     );
   }
