@@ -176,12 +176,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     emit(AuthLoading());
     try {
-      final success = await AuthService.signInWithGoogle();
-      if (success) {
-        emit(AuthSuccess(message: 'Google sign in initiated'));
-      } else {
-        emit(AuthError(message: 'Failed to initiate Google sign in'));
-      }
+      await AuthService.signInWithGoogle();
+      // OAuth flow opens browser; final session arrives via redirect.
+      // Emit success initiation; actual AuthAuthenticated should come from
+      // AuthCheckRequested/onAuthStateChange elsewhere in the app.
+      emit(const AuthSuccess(message: 'Google sign in initiated'));
     } catch (e) {
       emit(AuthError(message: e.toString()));
     }

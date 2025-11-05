@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:dejurebook/services/supabase_config.dart';
+// (no extra imports needed for OAuth flow)
 
 class AuthService {
   static final SupabaseClient _supabase = SupabaseConfig.client;
@@ -45,12 +46,23 @@ class AuthService {
   }
 
   // Sign in with Google
-  static Future<bool> signInWithGoogle() async {
+  static Future<void> signInWithGoogle() async {
     try {
-      await _supabase.auth.signInWithOAuth(OAuthProvider.google);
-      return true;
+      // Use Supabase OAuth flow with deep link redirect (per docs)
+      // Ensure this redirect is whitelisted in Supabase Auth → Redirect URLs
+      const redirectUri = 'io.supabase.flutter://login-callback';
+
+      await _supabase.auth.signInWithOAuth(
+        OAuthProvider.google,
+        // Provide common scopes and query params if you need Google refresh tokens
+        queryParams: const {
+          'access_type': 'offline',
+          'prompt': 'consent',
+        },
+        redirectTo: redirectUri,
+      );
     } catch (e) {
-      return false;
+      rethrow;
     }
   }
 

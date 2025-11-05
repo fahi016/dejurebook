@@ -39,6 +39,15 @@ android {
     }
 }
 
+dependencies {
+    // Required for Google Sign-In via AndroidX Credential Manager (google_sign_in >= 7)
+    implementation "androidx.credentials:credentials:1.3.0"
+    implementation "androidx.credentials:credentials-play-services-auth:1.3.0"
+
+    // Google Play Services Auth (sometimes pulled transitively, add explicitly to be safe)
+    implementation "com.google.android.gms:play-services-auth:21.2.0"
+}
+
 flutter {
     source = "../.."
 }
