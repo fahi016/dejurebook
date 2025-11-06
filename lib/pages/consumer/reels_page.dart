@@ -6,7 +6,8 @@ import 'package:dejurebook/pages/consumer/bloc/consumer_bloc.dart';
 import 'package:dejurebook/pages/consumer/bloc/consumer_event.dart';
 import 'package:dejurebook/pages/consumer/bloc/consumer_state.dart';
 import 'package:video_player/video_player.dart';
-import 'package:chewie/chewie.dart';
+// Removed Chewie to reduce overhead; use VideoPlayer directly
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
 class ReelsPage extends StatelessWidget {
   final int initialIndex;
@@ -40,17 +41,106 @@ class ReelsPageView extends StatefulWidget {
 class _ReelsPageViewState extends State<ReelsPageView> {
   late PageController _pageController;
   int _currentIndex = 0;
+  final Map<int, VideoPlayerController> _videoControllers = {};
+  final Set<int> _initializing = {};
 
   @override
   void initState() {
     super.initState();
+    _currentIndex = widget.initialIndex;
     _pageController = PageController(initialPage: widget.initialIndex);
   }
 
   @override
   void dispose() {
     _pageController.dispose();
+    _disposeAllControllers();
     super.dispose();
+  }
+
+  void _disposeAllControllers() {
+    for (final controller in _videoControllers.values) {
+      controller.dispose();
+    }
+    _videoControllers.clear();
+  }
+
+  void _preloadVideos(List<ReelItem> reels, int currentIndex) {
+    // Preload current and next 1 video (limit concurrent work)
+    for (int i = currentIndex; i < currentIndex + 2 && i < reels.length; i++) {
+      if (!_videoControllers.containsKey(i) && !_initializing.contains(i)) {
+        _initializeVideo(i, reels[i].videoUrl);
+      }
+    }
+
+    // Dispose videos that are far away (more than 2 positions)
+    final keysToRemove = _videoControllers.keys
+        .where((key) => (key - currentIndex).abs() > 2)
+        .toList();
+
+    for (final key in keysToRemove) {
+      _videoControllers[key]?.dispose();
+      _videoControllers.remove(key);
+    }
+  }
+
+  Future<void> _initializeVideo(int index, String url) async {
+    try {
+      _initializing.add(index);
+      // Cache video file before initializing player for better performance
+      final file = await DefaultCacheManager().getSingleFile(url);
+
+      final controller = VideoPlayerController.file(
+        file,
+        videoPlayerOptions: VideoPlayerOptions(
+          mixWithOthers: false,
+          allowBackgroundPlayback: false,
+        ),
+      );
+
+      await controller.initialize();
+
+      if (!mounted) {
+        controller.dispose();
+        return;
+      }
+
+      controller.setLooping(true);
+      controller.setVolume(0.0); // start muted for autoplay smoothness
+      _videoControllers[index] = controller;
+
+      if (mounted) setState(() {});
+
+      // Auto-play if this is the current video
+      if (index == _currentIndex) {
+        controller.play();
+      }
+    } catch (e) {
+      debugPrint('Error initializing video at index $index: $e');
+    } finally {
+      _initializing.remove(index);
+    }
+  }
+
+  void _handlePageChange(int index, List<ReelItem> reels) {
+    // Pause previous video
+    _videoControllers[_currentIndex]?.pause();
+
+    setState(() {
+      _currentIndex = index;
+    });
+
+    // Play current video
+    final currentController = _videoControllers[index];
+    if (currentController != null && currentController.value.isInitialized) {
+      currentController.play();
+    }
+
+    // Preload nearby videos
+    _preloadVideos(reels, index);
+
+    // Update bloc
+    context.read<ConsumerBloc>().add(ChangeReelEvent(index));
   }
 
   @override
@@ -68,6 +158,13 @@ class _ReelsPageViewState extends State<ReelsPageView> {
           );
         }
 
+        // Preload videos when reels are loaded
+        if (_videoControllers.isEmpty) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _preloadVideos(state.reels, _currentIndex);
+          });
+        }
+
         return Scaffold(
           backgroundColor: AppColors.black,
           body: PageView.builder(
@@ -77,33 +174,37 @@ class _ReelsPageViewState extends State<ReelsPageView> {
             itemBuilder: (context, index) {
               final reel = state.reels[index];
               final isActive = index == _currentIndex;
-              return _buildReelItem(context, reel, isActive: isActive);
+              return _buildReelItem(
+                context,
+                reel,
+                index,
+                isActive: isActive,
+              );
             },
-            onPageChanged: (index) {
-              context.read<ConsumerBloc>().add(ChangeReelEvent(index));
-              setState(() {
-                _currentIndex = index;
-              });
-            },
+            onPageChanged: (index) => _handlePageChange(index, state.reels),
           ),
         );
       },
     );
   }
 
-  Widget _buildReelItem(BuildContext context, ReelItem reel,
-      {required bool isActive}) {
+  Widget _buildReelItem(
+    BuildContext context,
+    ReelItem reel,
+    int index, {
+    required bool isActive,
+  }) {
     final screenWidth = ResponsiveUtils.getScreenWidth(context);
     final screenHeight = ResponsiveUtils.getScreenHeight(context);
 
     return Container(
-      color: AppColors.darkGrey,
+      color: AppColors.black,
       child: Stack(
         children: [
           // Video player
           Positioned.fill(
-            child: _ReelVideoPlayer(
-              url: reel.videoUrl,
+            child: _buildVideoPlayer(
+              index,
               width: ResponsiveUtils.isMobile(context) ? screenWidth : 400,
               height: ResponsiveUtils.isMobile(context) ? screenHeight : 700,
               play: isActive,
@@ -119,17 +220,16 @@ class _ReelsPageViewState extends State<ReelsPageView> {
                 children: [
                   Icon(
                     Icons.chat_bubble_outline,
-                    color: AppColors.getOnSurfaceColor(context),
+                    color: AppColors.white,
                     size: ResponsiveUtils.getResponsiveFontSize(context, 28),
                   ),
                   IconButton(
                     onPressed: () {
-                      // Navigate back
                       Navigator.of(context).pop();
                     },
                     icon: Icon(
                       Icons.close,
-                      color: AppColors.getOnSurfaceColor(context),
+                      color: AppColors.white,
                       size: ResponsiveUtils.getResponsiveFontSize(context, 28),
                     ),
                   ),
@@ -148,7 +248,7 @@ class _ReelsPageViewState extends State<ReelsPageView> {
                 _buildActionButton(
                   context,
                   icon: Icons.favorite,
-                  label: 'Like',
+                  label: '${reel.likes}',
                   isActive: reel.isLiked,
                   onTap: () {
                     context.read<ConsumerBloc>().add(LikeReelEvent(reel.id));
@@ -193,7 +293,8 @@ class _ReelsPageViewState extends State<ReelsPageView> {
                   begin: Alignment.bottomCenter,
                   end: Alignment.topCenter,
                   colors: [
-                    AppColors.black.withOpacity(0.7),
+                    AppColors.black.withOpacity(0.8),
+                    AppColors.black.withOpacity(0.4),
                     Colors.transparent,
                   ],
                 ),
@@ -219,6 +320,16 @@ class _ReelsPageViewState extends State<ReelsPageView> {
                           child: Image.asset(
                             'assets/images/profile_picture_image.png',
                             fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                color: AppColors.grey,
+                                child: Icon(
+                                  Icons.person,
+                                  color: AppColors.white,
+                                  size: 24,
+                                ),
+                              );
+                            },
                           ),
                         ),
                       ),
@@ -302,6 +413,30 @@ class _ReelsPageViewState extends State<ReelsPageView> {
     );
   }
 
+  Widget _buildVideoPlayer(
+    int index, {
+    required double width,
+    required double height,
+    required bool play,
+  }) {
+    final videoController = _videoControllers[index];
+
+    if (videoController == null || !videoController.value.isInitialized) {
+      return Center(
+        child: CircularProgressIndicator(
+          color: AppColors.white,
+        ),
+      );
+    }
+
+    return Center(
+      child: AspectRatio(
+        aspectRatio: videoController.value.aspectRatio,
+        child: VideoPlayer(videoController),
+      ),
+    );
+  }
+
   Widget _buildActionButton(
     BuildContext context, {
     required IconData icon,
@@ -317,7 +452,7 @@ class _ReelsPageViewState extends State<ReelsPageView> {
           Icon(
             icon,
             color: isActive ? AppColors.errorRed : AppColors.white,
-            size: ResponsiveUtils.getResponsiveFontSize(context, 24),
+            size: ResponsiveUtils.getResponsiveFontSize(context, 28),
           ),
           SizedBox(height: ResponsiveUtils.getResponsiveSpacing(context, 4)),
           Text(
@@ -329,123 +464,6 @@ class _ReelsPageViewState extends State<ReelsPageView> {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _ReelVideoPlayer extends StatefulWidget {
-  final String url;
-  final double width;
-  final double height;
-  final bool play;
-
-  const _ReelVideoPlayer({
-    required this.url,
-    required this.width,
-    required this.height,
-    required this.play,
-  });
-
-  @override
-  State<_ReelVideoPlayer> createState() => _ReelVideoPlayerState();
-}
-
-class _ReelVideoPlayerState extends State<_ReelVideoPlayer> {
-  VideoPlayerController? _vpController;
-  ChewieController? _chewieController;
-  bool _initError = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _initControllers();
-  }
-
-  Future<void> _initControllers() async {
-    try {
-      final controller =
-          VideoPlayerController.networkUrl(Uri.parse(widget.url));
-      await controller.initialize();
-      controller.setLooping(true);
-      _vpController = controller;
-      _chewieController = ChewieController(
-        videoPlayerController: controller,
-        autoPlay: widget.play,
-        looping: true,
-        showControls: false,
-        allowFullScreen: false,
-        allowMuting: true,
-        aspectRatio: controller.value.aspectRatio == 0
-            ? 9 / 16
-            : controller.value.aspectRatio,
-      );
-      if (mounted) setState(() {});
-      _syncPlayback();
-    } catch (_) {
-      _initError = true;
-      if (mounted) setState(() {});
-    }
-  }
-
-  @override
-  void didUpdateWidget(covariant _ReelVideoPlayer oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.url != widget.url) {
-      _disposeControllers();
-      _initControllers();
-    } else if (oldWidget.play != widget.play) {
-      _syncPlayback();
-    }
-  }
-
-  void _syncPlayback() {
-    final c = _vpController;
-    if (c == null) return;
-    if (widget.play) {
-      c.play();
-    } else {
-      c.pause();
-    }
-  }
-
-  @override
-  void dispose() {
-    _disposeControllers();
-    super.dispose();
-  }
-
-  void _disposeControllers() {
-    _chewieController?.dispose();
-    _vpController?.dispose();
-    _chewieController = null;
-    _vpController = null;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_initError) {
-      return Center(
-        child: Icon(
-          Icons.error_outline,
-          color: AppColors.white,
-          size: 40,
-        ),
-      );
-    }
-    if (_vpController == null || !_vpController!.value.isInitialized) {
-      return const Center(
-        child: CircularProgressIndicator(color: AppColors.white),
-      );
-    }
-    return Center(
-      child: SizedBox(
-        width: widget.width,
-        height: widget.height,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: Chewie(controller: _chewieController!),
-        ),
       ),
     );
   }

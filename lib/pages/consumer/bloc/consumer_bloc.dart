@@ -21,9 +21,8 @@ class ConsumerBloc extends Bloc<ConsumerEvent, ConsumerState> {
   void _onChangeNav(ChangeNavEvent event, Emitter<ConsumerState> emit) {
     emit(state.copyWith(currentNavIndex: event.navIndex));
 
-    // Load data for the selected tab
-    if (event.navIndex == 2) {
-      // Reels tab
+    // Only load reels data if not already loaded and navigating to reels tab
+    if (event.navIndex == 2 && state.reels.isEmpty) {
       add(const LoadReelsDataEvent());
     } else if (event.navIndex == 1) {
       // Awaz tab
@@ -58,10 +57,15 @@ class ConsumerBloc extends Bloc<ConsumerEvent, ConsumerState> {
 
   Future<void> _onLoadReelsData(
       LoadReelsDataEvent event, Emitter<ConsumerState> emit) async {
+    // Don't reload if already loaded (unless explicitly forcing reload)
+    if (state.reels.isNotEmpty && !event.forceReload) {
+      return;
+    }
+
     emit(state.copyWith(isLoading: true, error: null));
 
     try {
-      // Fetch video URLs from Cloudinary (already shuffled randomly)
+      // Fetch video URLs from Cloudinary with optimized transformations
       final videoUrls = await CloudinaryService.getReelsVideoUrls();
 
       if (videoUrls.isEmpty) {
@@ -75,7 +79,6 @@ class ConsumerBloc extends Bloc<ConsumerEvent, ConsumerState> {
       }
 
       // Create ReelItem objects from Cloudinary video URLs
-      // Videos are already in random order from CloudinaryService
       final reels = videoUrls.asMap().entries.map((entry) {
         final index = entry.key;
         final videoUrl = entry.value;

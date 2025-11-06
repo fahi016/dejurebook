@@ -34,7 +34,12 @@ class LoadAwazDataEvent extends ConsumerEvent {
 }
 
 class LoadReelsDataEvent extends ConsumerEvent {
-  const LoadReelsDataEvent();
+  final bool forceReload;
+
+  const LoadReelsDataEvent({this.forceReload = false});
+
+  @override
+  List<Object> get props => [forceReload];
 }
 
 class ToggleVoiceListeningEvent extends ConsumerEvent {

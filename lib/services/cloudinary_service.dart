@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
-// Using direct URL construction to avoid SDK API differences
 
 /// Client-safe Cloudinary service for URL generation and uploads
 class CloudinaryService {
@@ -26,14 +25,17 @@ class CloudinaryService {
     return 'https://res.cloudinary.com/$cloudName/image/upload/$transString/$publicId';
   }
 
-  /// Build optimized video URL
+  /// Build optimized video URL with better quality settings
   static String videoUrl({required String publicId}) {
     final cloudName = dotenv.env['CLOUDINARY_CLOUD_NAME'] ?? '';
     if (cloudName.isEmpty) return '';
 
+    // Optimized transformations for mobile video playback
     final transformations = <String, String>{
-      'f': 'auto',
-      'q': 'auto',
+      'f': 'mp4', // Force MP4 format for better compatibility
+      'q': 'auto:good', // Better quality preset
+      'vc': 'h264', // H.264 codec for compatibility
+      'br': '1m', // 1Mbps bitrate for smooth streaming
     };
     final transString =
         transformations.entries.map((e) => '${e.key}_${e.value}').join(',');
@@ -108,7 +110,7 @@ class CloudinaryService {
   }
 
   /// Fetch reels video URLs using Admin API (gets actual secure URLs with versions)
-  /// Fetches all videos from the 'reels' folder
+  /// Fetches all videos from the 'reels' folder with optimized transformations
   static Future<List<String>> getReelsVideoUrls() async {
     final cloudName = dotenv.env['CLOUDINARY_CLOUD_NAME'] ?? '';
     final apiKey = dotenv.env['CLOUDINARY_API_KEY'] ?? '';
@@ -123,14 +125,13 @@ class CloudinaryService {
           .map((e) => e.trim())
           .where((e) => e.isNotEmpty)
           .toList();
-      final urls = publicIds.map((id) => videoUrl(publicId: id)).toList();
+      final urls = publicIds.map((id) => _buildOptimizedVideoUrl(cloudName, id)).toList();
       urls.shuffle(Random());
       return urls;
     }
 
     try {
-      // Use Admin API to fetch actual secure URLs with version numbers
-      // Try fetching from 'reels' folder first, then try root if empty
+      // Use Admin API to fetch videos
       List<String> urls = [];
 
       // First try: fetch from 'reels' folder
@@ -148,13 +149,17 @@ class CloudinaryService {
         final resources = jsonData['resources'] as List<dynamic>?;
 
         if (resources != null && resources.isNotEmpty) {
-          // Extract secure_url from each resource (includes version numbers)
+          // Build optimized URLs using public_id instead of secure_url
           urls = resources
               .map((resource) {
                 final resourceMap = resource as Map<String, dynamic>;
-                return resourceMap['secure_url'] as String?;
+                final publicId = resourceMap['public_id'] as String?;
+                if (publicId != null && publicId.isNotEmpty) {
+                  return _buildOptimizedVideoUrl(cloudName, publicId);
+                }
+                return null;
               })
-              .where((url) => url != null && url.isNotEmpty)
+              .where((url) => url != null)
               .cast<String>()
               .toList();
         }
@@ -175,13 +180,17 @@ class CloudinaryService {
           final resources = jsonData['resources'] as List<dynamic>?;
 
           if (resources != null && resources.isNotEmpty) {
-            // Extract secure_url from each resource (includes version numbers)
+            // Build optimized URLs using public_id
             urls = resources
                 .map((resource) {
                   final resourceMap = resource as Map<String, dynamic>;
-                  return resourceMap['secure_url'] as String?;
+                  final publicId = resourceMap['public_id'] as String?;
+                  if (publicId != null && publicId.isNotEmpty) {
+                    return _buildOptimizedVideoUrl(cloudName, publicId);
+                  }
+                  return null;
                 })
-                .where((url) => url != null && url.isNotEmpty)
+                .where((url) => url != null)
                 .cast<String>()
                 .toList();
           }
@@ -195,6 +204,7 @@ class CloudinaryService {
         return [];
       }
 
+      // Shuffle for random order
       urls.shuffle(Random());
       return urls;
     } catch (e) {
@@ -206,10 +216,27 @@ class CloudinaryService {
           .map((e) => e.trim())
           .where((e) => e.isNotEmpty)
           .toList();
-      final urls = publicIds.map((id) => videoUrl(publicId: id)).toList();
+      final urls = publicIds.map((id) => _buildOptimizedVideoUrl(cloudName, id)).toList();
       urls.shuffle(Random());
       return urls;
     }
+  }
+
+  /// Build optimized video URL for mobile playback
+  static String _buildOptimizedVideoUrl(String cloudName, String publicId) {
+    // Remove any existing file extension
+    final cleanId = publicId.replaceAll(RegExp(r'\.(mp4|mov|avi)$'), '');
+    
+    // Optimized transformations for smooth mobile playback
+    final transformations = [
+      'f_mp4', // Force MP4 format
+      'q_auto:good', // Good quality with auto optimization
+      'vc_h264', // H.264 codec
+      'br_1m', // 1Mbps bitrate
+      'so_0', // Start from beginning
+    ].join(',');
+
+    return 'https://res.cloudinary.com/$cloudName/video/upload/$transformations/$cleanId.mp4';
   }
 
   /// Checks minimal configuration (no secrets on client)
