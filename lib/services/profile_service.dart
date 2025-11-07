@@ -13,6 +13,7 @@ class ProfileService {
     String? avatarUrl,
     String? userType,
     String? profession,
+    String? phoneNumber,
   }) async {
     try {
       print('Creating profile with data:');
@@ -28,6 +29,7 @@ class ProfileService {
         'avatar_url': avatarUrl,
         'user_type': userType,
         'profession': profession,
+        'phone_number': phoneNumber,
       };
 
       print('Insert data: $insertData');
@@ -86,6 +88,7 @@ class ProfileService {
     String? avatarUrl,
     String? userType,
     String? profession,
+    String? phoneNumber,
   }) async {
     try {
       print('Updating profile with data:');
@@ -103,6 +106,7 @@ class ProfileService {
       if (avatarUrl != null) updateData['avatar_url'] = avatarUrl;
       if (userType != null) updateData['user_type'] = userType;
       if (profession != null) updateData['profession'] = profession;
+      if (phoneNumber != null) updateData['phone_number'] = phoneNumber;
 
       print('Update data: $updateData');
 
@@ -129,6 +133,7 @@ class ProfileService {
     String? avatarUrl,
     String? userType,
     String? profession,
+    String? phoneNumber,
   }) async {
     final user = _supabase.auth.currentUser;
     if (user == null) throw Exception('No authenticated user');
@@ -139,6 +144,7 @@ class ProfileService {
       avatarUrl: avatarUrl,
       userType: userType,
       profession: profession,
+      phoneNumber: phoneNumber,
     );
   }
 

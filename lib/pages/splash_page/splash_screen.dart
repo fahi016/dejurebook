@@ -1,9 +1,8 @@
+import 'package:dejurebook/constants/responsive_utils.dart';
 import 'package:dejurebook/pages/on_boarding/on_boarding_page.dart';
 import 'package:dejurebook/pages/user_selection/user_selection.dart';
-import 'package:dejurebook/pages/consumer/consumer_home_page.dart';
 import 'package:dejurebook/services/auth_service.dart';
-import 'package:dejurebook/services/profile_service.dart';
-import 'package:dejurebook/constants/responsive_utils.dart';
+import 'package:dejurebook/utils/auth_navigation_helper.dart';
 import 'package:flutter/material.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -30,39 +29,18 @@ class _SplashScreenState extends State<SplashScreen> {
     final isAuthenticated = AuthService.isAuthenticated;
 
     if (isAuthenticated) {
-      try {
-        // Check if user has completed profile and selected user type
-        final profile = await ProfileService.getCurrentUserProfile();
-        debugPrint(
-            'Profile loaded in splash: ${profile?.userType}, ${profile?.fullName}');
+      final destination = await AuthNavigationHelper.determinePostAuthDestination();
+      if (!mounted) return;
 
-        if (profile != null &&
-            profile.userType != null &&
-            profile.userType!.isNotEmpty) {
-          // User has completed setup, go to home page
-          debugPrint('User has completed setup, going to home');
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const ConsumerHomePage()),
-          );
-        } else {
-          // User is authenticated but hasn't selected user type, go to user selection
-          debugPrint('User needs to select type');
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const UserSelection(),
-            ),
-          );
-        }
-      } catch (e) {
-        debugPrint('Error loading profile in splash: $e');
-        // Error loading profile, assume user needs to complete setup
+      if (destination != null) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(
-            builder: (context) => const UserSelection(),
-          ),
+          MaterialPageRoute(builder: (_) => destination),
+        );
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const UserSelection()),
         );
       }
     } else {

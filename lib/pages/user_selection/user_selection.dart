@@ -4,6 +4,7 @@ import 'package:dejurebook/pages/user_selection/bloc/user_selection_bloc.dart';
 import 'package:dejurebook/pages/user_selection/bloc/user_selection_event.dart';
 import 'package:dejurebook/pages/user_selection/bloc/user_selection_state.dart';
 import 'package:dejurebook/pages/consumer/widgets/complete_profile_screen.dart';
+import 'package:dejurebook/pages/lawyer/widgets/complete_lawyer_profile.dart';
 import 'package:dejurebook/widgets/user_type_card.dart';
 import 'package:dejurebook/widgets/custom_button.dart';
 
@@ -34,6 +35,13 @@ class UserSelectionView extends StatelessWidget {
               context,
               MaterialPageRoute(
                 builder: (context) => const CompleteProfileScreen(),
+              ),
+            );
+          } else if (state.selectedUserType == UserType.lawyer) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const CompleteLawyerProfilePage(),
               ),
             );
           }

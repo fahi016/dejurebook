@@ -1,8 +1,7 @@
-import 'package:dejurebook/pages/user_selection/user_selection.dart';
-import 'package:dejurebook/pages/consumer/consumer_home_page.dart';
 import 'package:dejurebook/bloc/auth_bloc.dart';
+import 'package:dejurebook/pages/user_selection/user_selection.dart';
 import 'package:dejurebook/services/auth_service.dart';
-import 'package:dejurebook/services/profile_service.dart';
+import 'package:dejurebook/utils/auth_navigation_helper.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -24,15 +23,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   void _checkAuthentication() {
     // Check if user is already authenticated
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       final isAuthenticated = AuthService.isAuthenticated;
-      if (isAuthenticated && mounted) {
-        // User is already signed in, go to home page
+      if (!isAuthenticated) return;
+
+      final destination =
+          await AuthNavigationHelper.determinePostAuthDestination();
+      if (destination != null && mounted) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(
-            builder: (context) => const ConsumerHomePage(),
-          ),
+          MaterialPageRoute(builder: (_) => destination),
         );
       }
     });
@@ -75,23 +75,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
             );
           } else {
             // For sign-in, check if user has a user_type set
-            final profile = await ProfileService.getCurrentUserProfile();
-            if (profile?.userType != null) {
-              // User already has a type, go to home page
-              if (!mounted) return;
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => const ConsumerHomePage()),
-              );
-            } else {
-              // User needs to select type
-              if (!mounted) return;
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const UserSelection()),
-              );
-            }
+            final destination =
+                await AuthNavigationHelper.determinePostAuthDestination();
+            if (!mounted || destination == null) return;
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => destination),
+            );
           }
         } else if (state is AuthError) {
           if (!mounted) return;
@@ -260,23 +250,13 @@ class _SignInPageState extends State<SignInPage> {
             );
           } else {
             // For sign-in, check if user has a user_type set
-            final profile = await ProfileService.getCurrentUserProfile();
-            if (profile?.userType != null) {
-              // User already has a type, go to home page
-              if (!mounted) return;
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => const ConsumerHomePage()),
-              );
-            } else {
-              // User needs to select type
-              if (!mounted) return;
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const UserSelection()),
-              );
-            }
+            final destination =
+                await AuthNavigationHelper.determinePostAuthDestination();
+            if (!mounted || destination == null) return;
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => destination),
+            );
           }
         } else if (state is AuthError) {
           if (!mounted) return;
