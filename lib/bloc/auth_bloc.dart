@@ -68,11 +68,15 @@ class AuthLoading extends AuthState {}
 
 class AuthAuthenticated extends AuthState {
   final User user;
+  final bool isNewSignup;
 
-  const AuthAuthenticated({required this.user});
+  const AuthAuthenticated({
+    required this.user,
+    this.isNewSignup = false,
+  });
 
   @override
-  List<Object?> get props => [user];
+  List<Object?> get props => [user, isNewSignup];
 }
 
 class AuthUnauthenticated extends AuthState {}
@@ -118,7 +122,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   void _onAuthCheckRequested(
       AuthCheckRequested event, Emitter<AuthState> emit) {
     if (AuthService.isAuthenticated) {
-      emit(AuthAuthenticated(user: AuthService.currentUser!));
+      emit(AuthAuthenticated(
+        user: AuthService.currentUser!,
+        isNewSignup: false,
+      ));
     } else {
       emit(AuthUnauthenticated());
     }
@@ -138,8 +145,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       );
 
       if (response.user != null) {
-        // Emit Authenticated so UI can react and create profile reliably
-        emit(AuthAuthenticated(user: response.user!));
+        // Emit Authenticated with isNewSignup flag so UI can navigate to UserSelection
+        emit(AuthAuthenticated(
+          user: response.user!,
+          isNewSignup: true,
+        ));
       } else {
         emit(AuthError(message: 'Failed to create account'));
       }
@@ -147,7 +157,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(AuthError(message: e.toString()));
     }
   }
-
 
   Future<void> _onAuthSignInRequested(
     AuthSignInRequested event,
@@ -161,7 +170,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       );
 
       if (response.user != null) {
-        emit(AuthAuthenticated(user: response.user!));
+        emit(AuthAuthenticated(
+          user: response.user!,
+          isNewSignup: false,
+        ));
       } else {
         emit(AuthError(message: 'Failed to sign in'));
       }

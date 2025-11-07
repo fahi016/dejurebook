@@ -1,5 +1,4 @@
 import 'package:dejurebook/pages/user_selection/user_selection.dart';
-import 'package:dejurebook/pages/auth/complete_profile_screen.dart';
 import 'package:dejurebook/pages/consumer/consumer_home_page.dart';
 import 'package:dejurebook/bloc/auth_bloc.dart';
 import 'package:dejurebook/services/auth_service.dart';
@@ -67,22 +66,35 @@ class _SignUpScreenState extends State<SignUpScreen> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) async {
         if (state is AuthAuthenticated) {
-          // Check if user has a user_type set
-          final profile = await ProfileService.getCurrentUserProfile();
-          if (profile?.userType != null) {
-            // User already has a type, go to home page
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const ConsumerHomePage()),
-            );
-          } else {
-            // User needs to select type
+          // If this is a new signup, navigate to UserSelection
+          if (state.isNewSignup) {
+            if (!mounted) return;
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => const UserSelection()),
             );
+          } else {
+            // For sign-in, check if user has a user_type set
+            final profile = await ProfileService.getCurrentUserProfile();
+            if (profile?.userType != null) {
+              // User already has a type, go to home page
+              if (!mounted) return;
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const ConsumerHomePage()),
+              );
+            } else {
+              // User needs to select type
+              if (!mounted) return;
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const UserSelection()),
+              );
+            }
           }
         } else if (state is AuthError) {
+          if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.message),
@@ -90,6 +102,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             ),
           );
         } else if (state is AuthSuccess) {
+          if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.message),
@@ -130,8 +143,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 // Login with Google Button
                 AuthButton(
                   text: 'Login with Google',
-                  icon: Icons.g_mobiledata_rounded,
-                  iconSize: 35,
+                  iconImage: 'assets/images/google_icon.png',
                   onPressed: () => _handleGoogleLogin(context),
                 ),
 
@@ -239,22 +251,32 @@ class _SignInPageState extends State<SignInPage> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) async {
         if (state is AuthAuthenticated) {
-          // Check if user has a user_type set
-          final profile = await ProfileService.getCurrentUserProfile();
-          if (profile?.userType != null) {
-            // User already has a type, go to home page
-            if (!mounted) return;
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const ConsumerHomePage()),
-            );
-          } else {
-            // User needs to select type
+          // If this is a new signup, navigate to UserSelection
+          if (state.isNewSignup) {
             if (!mounted) return;
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => const UserSelection()),
             );
+          } else {
+            // For sign-in, check if user has a user_type set
+            final profile = await ProfileService.getCurrentUserProfile();
+            if (profile?.userType != null) {
+              // User already has a type, go to home page
+              if (!mounted) return;
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const ConsumerHomePage()),
+              );
+            } else {
+              // User needs to select type
+              if (!mounted) return;
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const UserSelection()),
+              );
+            }
           }
         } else if (state is AuthError) {
           if (!mounted) return;
@@ -363,17 +385,13 @@ class _SignInPageState extends State<SignInPage> {
                           : () {
                               if (_formKey.currentState!.validate()) {
                                 if (_isSignUp) {
-                                  // Navigate to complete profile screen for new users
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          CompleteProfileScreen(
-                                        email: _emailController.text.trim(),
-                                        password: _passwordController.text,
-                                      ),
-                                    ),
-                                  );
+                                  // Sign up first, then navigate to UserSelection
+                                  context.read<AuthBloc>().add(
+                                        AuthSignUpRequested(
+                                          email: _emailController.text.trim(),
+                                          password: _passwordController.text,
+                                        ),
+                                      );
                                 } else {
                                   context.read<AuthBloc>().add(
                                         AuthSignInRequested(

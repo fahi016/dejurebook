@@ -1,3 +1,4 @@
+import 'package:dejurebook/constants/app_colors.dart';
 import 'package:dejurebook/pages/messages/message_screen.dart';
 import 'package:dejurebook/pages/profile/profile_page.dart';
 import 'package:dejurebook/widgets/custom_image_widget.dart';
@@ -101,23 +102,23 @@ class ConsumerHomeView extends StatelessWidget {
                 ),
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.surfaceVariant,
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(
+                    ResponsiveUtils.getResponsiveSpacing(context, 10),
+                  ),
                 ),
                 child: Text(
                   'deJure Premium',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: const Color(0xFF5C7600),
-                    fontSize:
-                        ResponsiveUtils.getResponsiveFontSize(context, 14),
+                    color: AppColors.brandGreen,
+                    fontSize: ResponsiveUtils.getResponsiveFontSize(context, 14),
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
               ),
             ),
           ),
-          SizedBox(
-            width: ResponsiveUtils.getResponsiveSpacing(context, 40),
-          ),
+          SizedBox(width: ResponsiveUtils.getResponsiveFontSize(context, 40)),
 
           // 🔹 Right side (Profile)
           GestureDetector(
@@ -141,7 +142,7 @@ class ConsumerHomeView extends StatelessWidget {
                 errorWidget: Icon(
                   Icons.person,
                   color: Theme.of(context).colorScheme.onSurface,
-                  size: ResponsiveUtils.getResponsiveFontSize(context, 20),
+                  size: ResponsiveUtils.getResponsiveFontSize(context, 24),
                 ),
               ),
             ),
@@ -168,15 +169,25 @@ class ConsumerHomeView extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).colorScheme.shadow.withOpacity(0.1),
+            blurRadius: 4,
+            offset: const Offset(0, -2),
+          ),
+        ],
       ),
       child: SafeArea(
         child: Padding(
-          padding: ResponsiveUtils.getResponsivePadding(context),
+          padding: EdgeInsets.symmetric(
+            horizontal: ResponsiveUtils.getResponsiveSpacing(context, 15),
+            vertical: ResponsiveUtils.getResponsiveSpacing(context, 8),
+          ),
           child: GNav(
             backgroundColor: Theme.of(context).colorScheme.surface,
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-            activeColor: Colors.white,
-            tabBackgroundColor: const Color(0xFF252525),
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+            activeColor: Theme.of(context).colorScheme.onPrimary,
+            tabBackgroundColor: Theme.of(context).colorScheme.primary,
             gap: ResponsiveUtils.getResponsiveSpacing(context, 8),
             padding: EdgeInsets.symmetric(
               horizontal: ResponsiveUtils.getResponsiveSpacing(context, 20),
@@ -189,17 +200,18 @@ class ConsumerHomeView extends StatelessWidget {
                 leading: state.currentNavIndex == 0
                     ? CustomImageWidget(
                         imagePath: 'assets/images/home_nav.png',
-                        width: 30,
-                        height: 30,
+                        width: ResponsiveUtils.getResponsiveFontSize(context, 24),
+                        height: ResponsiveUtils.getResponsiveFontSize(context, 24),
+                        color: Theme.of(context).colorScheme.onPrimary,
                         errorWidget: Icon(
                           Icons.home,
                           color: Theme.of(context).colorScheme.onPrimary,
-                          size: 24,
+                          size: ResponsiveUtils.getResponsiveFontSize(context, 24),
                         ),
                       )
                     : Container(
-                        width: 50,
-                        height: 50,
+                        width: ResponsiveUtils.getResponsiveFontSize(context, 40),
+                        height: ResponsiveUtils.getResponsiveFontSize(context, 40),
                         decoration: BoxDecoration(
                           color: Theme.of(context).colorScheme.surfaceVariant,
                           shape: BoxShape.circle,
@@ -207,13 +219,17 @@ class ConsumerHomeView extends StatelessWidget {
                         alignment: Alignment.center,
                         child: CustomImageWidget(
                           imagePath: 'assets/images/home_nav.png',
-                          width: 24,
-                          height: 24,
-                          color: Colors.grey,
+                          width:
+                              ResponsiveUtils.getResponsiveFontSize(context, 24),
+                          height:
+                              ResponsiveUtils.getResponsiveFontSize(context, 24),
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                           errorWidget: Icon(
-                            Icons.home_outlined,
-                            color: Colors.grey,
-                            size: 24,
+                            Icons.home,
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
+                            size: ResponsiveUtils.getResponsiveFontSize(
+                                context, 24),
                           ),
                         ),
                       ),
@@ -224,18 +240,18 @@ class ConsumerHomeView extends StatelessWidget {
                 leading: state.currentNavIndex == 1
                     ? CustomImageWidget(
                         imagePath: 'assets/images/awaz_nav.png',
-                        width: 30,
-                        height: 30,
-                        color: Colors.grey,
+                        width: ResponsiveUtils.getResponsiveFontSize(context, 24),
+                        height: ResponsiveUtils.getResponsiveFontSize(context, 24),
+                        color: Theme.of(context).colorScheme.onPrimary,
                         errorWidget: Icon(
-                          Icons.airplanemode_active,
+                          Icons.record_voice_over,
                           color: Theme.of(context).colorScheme.onPrimary,
-                          size: 24,
+                          size: ResponsiveUtils.getResponsiveFontSize(context, 24),
                         ),
                       )
                     : Container(
-                        width: 50,
-                        height: 50,
+                        width: ResponsiveUtils.getResponsiveFontSize(context, 40),
+                        height: ResponsiveUtils.getResponsiveFontSize(context, 40),
                         decoration: BoxDecoration(
                           color: Theme.of(context).colorScheme.surfaceVariant,
                           shape: BoxShape.circle,
@@ -243,13 +259,17 @@ class ConsumerHomeView extends StatelessWidget {
                         alignment: Alignment.center,
                         child: CustomImageWidget(
                           imagePath: 'assets/images/awaz_nav.png',
-                          width: 24,
-                          height: 24,
-                          color: Colors.grey,
+                          width:
+                              ResponsiveUtils.getResponsiveFontSize(context, 24),
+                          height:
+                              ResponsiveUtils.getResponsiveFontSize(context, 24),
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                           errorWidget: Icon(
-                            Icons.airplanemode_active_outlined,
-                            color: Colors.grey,
-                            size: 24,
+                            Icons.record_voice_over,
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
+                            size: ResponsiveUtils.getResponsiveFontSize(
+                                context, 24),
                           ),
                         ),
                       ),
@@ -260,18 +280,18 @@ class ConsumerHomeView extends StatelessWidget {
                 leading: state.currentNavIndex == 2
                     ? CustomImageWidget(
                         imagePath: 'assets/images/reels_nav.png',
-                        width: 30,
-                        height: 30,
-                        color: Colors.grey,
+                        width: ResponsiveUtils.getResponsiveFontSize(context, 24),
+                        height: ResponsiveUtils.getResponsiveFontSize(context, 24),
+                        color: Theme.of(context).colorScheme.onPrimary,
                         errorWidget: Icon(
-                          Icons.play_circle,
+                          Icons.play_circle_outline,
                           color: Theme.of(context).colorScheme.onPrimary,
-                          size: 24,
+                          size: ResponsiveUtils.getResponsiveFontSize(context, 24),
                         ),
                       )
                     : Container(
-                        width: 50,
-                        height: 50,
+                        width: ResponsiveUtils.getResponsiveFontSize(context, 40),
+                        height: ResponsiveUtils.getResponsiveFontSize(context, 40),
                         decoration: BoxDecoration(
                           color: Theme.of(context).colorScheme.surfaceVariant,
                           shape: BoxShape.circle,
@@ -279,13 +299,17 @@ class ConsumerHomeView extends StatelessWidget {
                         alignment: Alignment.center,
                         child: CustomImageWidget(
                           imagePath: 'assets/images/reels_nav.png',
-                          width: 24,
-                          height: 24,
-                          color: Colors.grey,
+                          width:
+                              ResponsiveUtils.getResponsiveFontSize(context, 24),
+                          height:
+                              ResponsiveUtils.getResponsiveFontSize(context, 24),
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                           errorWidget: Icon(
                             Icons.play_circle_outline,
-                            color: Colors.grey,
-                            size: 24,
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
+                            size: ResponsiveUtils.getResponsiveFontSize(
+                                context, 24),
                           ),
                         ),
                       ),

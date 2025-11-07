@@ -3,17 +3,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dejurebook/bloc/auth_bloc.dart';
 import 'package:dejurebook/services/profile_service.dart';
 import 'package:dejurebook/services/auth_service.dart';
-import 'package:dejurebook/pages/user_selection/user_selection.dart';
+import 'package:dejurebook/pages/consumer/consumer_home_page.dart';
 import 'package:dejurebook/models/user_profile.dart';
 
 class CompleteProfileScreen extends StatefulWidget {
-  final String email;
-  final String password;
-
   const CompleteProfileScreen({
     super.key,
-    required this.email,
-    required this.password,
   });
 
   @override
@@ -237,72 +232,50 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     try {
-      // First sign up the user
-      context.read<AuthBloc>().add(
-            AuthSignUpRequested(
-              email: widget.email,
-              password: widget.password,
-              metadata: {
-                'full_name': _nameController.text.trim(),
-                'phone': _phoneController.text.trim(),
-                'date_of_birth': _selectedDate?.toIso8601String(),
-                'gender': _selectedGender,
-                'profession': _professionController.text.trim(),
-              },
-            ),
-          );
-
-      // Wait for authentication to complete by listening to auth state
-      final authState = await context.read<AuthBloc>().stream.firstWhere(
-            (state) => state is AuthAuthenticated || state is AuthError,
-          );
-
-      if (authState is AuthError) {
-        throw Exception(authState.message);
+      // User is already authenticated, just create/update profile
+      final user = AuthService.currentUser;
+      if (user == null) {
+        throw Exception('User is not authenticated');
       }
 
-      // Create or update profile in database
-      final user = AuthService.currentUser;
-      if (user != null) {
-        debugPrint('Creating/updating profile for user: ${user.id}');
-        debugPrint('Name: ${_nameController.text.trim()}');
-        debugPrint('Profession: ${_professionController.text.trim()}');
+      debugPrint('Creating/updating profile for user: ${user.id}');
+      debugPrint('Name: ${_nameController.text.trim()}');
+      debugPrint('Profession: ${_professionController.text.trim()}');
 
-        // Check if profile exists
-        final profileExists = await ProfileService.profileExists(user.id);
+      // Check if profile exists
+      final profileExists = await ProfileService.profileExists(user.id);
 
-        UserProfile profile;
-        if (profileExists) {
-          // Profile exists, update it
-          debugPrint('Profile exists, updating...');
-          profile = await ProfileService.updateProfile(
-            userId: user.id,
-            fullName: _nameController.text.trim(),
-            profession: _professionController.text.trim(),
-          );
-        } else {
-          // Profile doesn't exist, create it
-          debugPrint('Profile does not exist, creating...');
-          profile = await ProfileService.createProfile(
-            userId: user.id,
-            email: widget.email,
-            fullName: _nameController.text.trim(),
-            profession: _professionController.text.trim(),
-          );
-        }
-
-        debugPrint('Profile saved: ${profile.fullName}, ${profile.profession}');
-
-        if (!mounted) return;
-
-        // Navigate to user selection
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const UserSelection(),
-          ),
+      UserProfile profile;
+      if (profileExists) {
+        // Profile exists, update it
+        debugPrint('Profile exists, updating...');
+        profile = await ProfileService.updateProfile(
+          userId: user.id,
+          fullName: _nameController.text.trim(),
+          profession: _professionController.text.trim(),
+        );
+      } else {
+        // Profile doesn't exist, create it
+        debugPrint('Profile does not exist, creating...');
+        profile = await ProfileService.createProfile(
+          userId: user.id,
+          email: user.email ?? '',
+          fullName: _nameController.text.trim(),
+          profession: _professionController.text.trim(),
         );
       }
+
+      debugPrint('Profile saved: ${profile.fullName}, ${profile.profession}');
+
+      if (!mounted) return;
+
+      // Navigate to consumer home page after profile completion
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const ConsumerHomePage(),
+        ),
+      );
     } catch (e) {
       debugPrint('Error in _submitProfile: $e');
       if (!mounted) return;

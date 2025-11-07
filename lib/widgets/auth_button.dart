@@ -4,7 +4,8 @@ import 'package:dejurebook/constants/responsive_utils.dart';
 
 class AuthButton extends StatelessWidget {
   final String text;
-  final IconData icon;
+  final IconData? icon;
+  final String? iconImage;
   final VoidCallback onPressed;
   final Color? backgroundColor;
   final Color? textColor;
@@ -13,12 +14,14 @@ class AuthButton extends StatelessWidget {
   const AuthButton({
     super.key,
     required this.text,
-    required this.icon,
     required this.onPressed,
+    this.icon,
+    this.iconImage,
     this.backgroundColor,
     this.textColor,
     this.iconSize,
-  });
+  }) : assert(icon != null || iconImage != null,
+            'Either an icon or iconImage must be provided.');
 
   @override
   Widget build(BuildContext context) {
@@ -28,8 +31,7 @@ class AuthButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: backgroundColor ?? AppColors.darkGrey
-        ,
+          backgroundColor: backgroundColor ?? AppColors.darkGrey,
           foregroundColor: textColor ?? AppColors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -40,13 +42,24 @@ class AuthButton extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              size: iconSize ??
-                  ResponsiveUtils.getResponsiveFontSize(context, 24),
-              color: AppColors.white,
+            if (iconImage != null)
+              Image.asset(
+                iconImage!,
+                width: iconSize ??
+                    ResponsiveUtils.getResponsiveFontSize(context, 24),
+                height: iconSize ??
+                    ResponsiveUtils.getResponsiveFontSize(context, 24),
+              )
+            else if (icon != null)
+              Icon(
+                icon,
+                size: iconSize ??
+                    ResponsiveUtils.getResponsiveFontSize(context, 24),
+                color: textColor ?? AppColors.white,
+              ),
+            SizedBox(
+              width: ResponsiveUtils.getResponsiveSpacing(context, 12),
             ),
-            SizedBox(width: ResponsiveUtils.getResponsiveSpacing(context, 12)),
             Text(
               text,
               style: TextStyle(

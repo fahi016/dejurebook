@@ -63,7 +63,7 @@ class FollowersView extends StatelessWidget {
           'deJure Premium',
           textAlign: TextAlign.center,
           style: TextStyle(
-            color: Colors.green,
+            color: AppColors.brandGreen,
             fontSize: 14,
           ),
         ),

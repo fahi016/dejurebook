@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dejurebook/pages/user_selection/bloc/user_selection_bloc.dart';
 import 'package:dejurebook/pages/user_selection/bloc/user_selection_event.dart';
 import 'package:dejurebook/pages/user_selection/bloc/user_selection_state.dart';
-import 'package:dejurebook/pages/consumer/consumer_home_page.dart';
+import 'package:dejurebook/pages/consumer/widgets/complete_profile_screen.dart';
 import 'package:dejurebook/widgets/user_type_card.dart';
 import 'package:dejurebook/widgets/custom_button.dart';
 
@@ -27,12 +27,13 @@ class UserSelectionView extends StatelessWidget {
     return BlocConsumer<UserSelectionBloc, UserSelectionState>(
       listener: (context, state) {
         if (state.isCompleted) {
-          // Navigate based on selected user type
+          // Navigate to CompleteProfileScreen after user type selection
+          // For now, only consumer is supported
           if (state.selectedUserType == UserType.consumer) {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                builder: (context) => const ConsumerHomePage(),
+                builder: (context) => const CompleteProfileScreen(),
               ),
             );
           }
