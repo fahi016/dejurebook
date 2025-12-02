@@ -3,7 +3,6 @@ import 'package:flutter/widgets.dart';
 
 import 'package:dejurebook/models/lawyer_profile.dart';
 import 'package:dejurebook/pages/consumer/consumer_home_page.dart';
-import 'package:dejurebook/pages/lawyer/lawyer_home_page.dart';
 import 'package:dejurebook/pages/lawyer/widgets/complete_lawyer_profile.dart';
 import 'package:dejurebook/pages/user_selection/user_selection.dart';
 import 'package:dejurebook/services/auth_service.dart';
@@ -34,7 +33,9 @@ class AuthNavigationHelper {
           if (!_isLawyerProfileComplete(lawyerProfile)) {
             return const CompleteLawyerProfilePage();
           }
-          return const LawyerHomePage();
+          // For now, lawyers land on the main consumer experience
+          // while their dedicated dashboard is being built.
+          return const ConsumerHomePage();
         case 'consumer':
           return const ConsumerHomePage();
         default:

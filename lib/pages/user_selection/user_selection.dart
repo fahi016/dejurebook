@@ -96,28 +96,6 @@ class UserSelectionView extends StatelessWidget {
                                 const SelectUserTypeEvent(UserType.lawyer));
                           },
                         ),
-                        UserTypeCard(
-                          imagePath: 'assets/images/law_student_image.png',
-                          title: "I'm a law student",
-                          userType: UserType.lawStudent,
-                          isSelected:
-                              state.selectedUserType == UserType.lawStudent,
-                          onTap: () {
-                            context.read<UserSelectionBloc>().add(
-                                const SelectUserTypeEvent(UserType.lawStudent));
-                          },
-                        ),
-                        UserTypeCard(
-                          imagePath: 'assets/images/other_user_image.png',
-                          title: "Other",
-                          userType: UserType.other,
-                          isSelected: state.selectedUserType == UserType.other,
-                          onTap: () {
-                            context
-                                .read<UserSelectionBloc>()
-                                .add(const SelectUserTypeEvent(UserType.other));
-                          },
-                        ),
                       ],
                     ),
                   ),
