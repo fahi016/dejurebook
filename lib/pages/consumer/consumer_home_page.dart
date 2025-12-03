@@ -1,4 +1,5 @@
 import 'package:dejurebook/constants/app_colors.dart';
+import 'package:dejurebook/pages/consumer/reels_page.dart';
 import 'package:dejurebook/pages/messages/message_screen.dart';
 import 'package:dejurebook/pages/profile/profile_page.dart';
 import 'package:dejurebook/widgets/custom_image_widget.dart';
@@ -170,18 +171,18 @@ class ConsumerHomeView extends StatelessWidget {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         boxShadow: [
-          BoxShadow(
-            color: Theme.of(context).colorScheme.shadow.withOpacity(0.1),
-            blurRadius: 4,
-            offset: const Offset(0, -2),
-          ),
+          // BoxShadow(
+          //   //color: Theme.of(context).colorScheme.shadow.withOpacity(0.1),
+          //   blurRadius: 4,
+          //   offset: const Offset(0, -2)
+          // ),
         ],
       ),
       child: SafeArea(
         child: Padding(
           padding: EdgeInsets.symmetric(
-            horizontal: ResponsiveUtils.getResponsiveSpacing(context, 15),
-            vertical: ResponsiveUtils.getResponsiveSpacing(context, 8),
+            horizontal: ResponsiveUtils.getResponsiveSpacing(context, 20),
+            vertical: ResponsiveUtils.getResponsiveSpacing(context, 12),
           ),
           child: GNav(
             backgroundColor: Theme.of(context).colorScheme.surface,
@@ -197,6 +198,7 @@ class ConsumerHomeView extends StatelessWidget {
               GButton(
                 icon: Icons.home,
                 text: 'Home',
+  
                 leading: state.currentNavIndex == 0
                     ? CustomImageWidget(
                         imagePath: 'assets/images/home_nav.png',

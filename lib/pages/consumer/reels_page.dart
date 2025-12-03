@@ -6,7 +6,6 @@ import 'package:dejurebook/pages/consumer/bloc/consumer_bloc.dart';
 import 'package:dejurebook/pages/consumer/bloc/consumer_event.dart';
 import 'package:dejurebook/pages/consumer/bloc/consumer_state.dart';
 import 'package:video_player/video_player.dart';
-// Removed Chewie to reduce overhead; use VideoPlayer directly
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
 class ReelsPage extends StatelessWidget {

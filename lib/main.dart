@@ -28,26 +28,26 @@ class SimpleBlocObserver extends BlocObserver {
   @override
   void onEvent(Bloc bloc, Object? event) {
     super.onEvent(bloc, event);
-    debugPrint('📍 Event: ${event.runtimeType}');
+    debugPrint('Event: ${event.runtimeType}');
   }
 
   @override
   void onTransition(Bloc bloc, Transition transition) {
     super.onTransition(bloc, transition);
     debugPrint(
-        '🔄 Transition: ${transition.currentState.runtimeType} → ${transition.nextState.runtimeType}');
+        'Transition: ${transition.currentState.runtimeType} → ${transition.nextState.runtimeType}');
   }
 
   @override
   void onError(BlocBase bloc, Object error, StackTrace stackTrace) {
     super.onError(bloc, error, stackTrace);
-    debugPrint('❌ Error in ${bloc.runtimeType}: $error');
+    debugPrint('Error in ${bloc.runtimeType}: $error');
   }
 
   @override
   void onChange(BlocBase bloc, Change change) {
     super.onChange(bloc, change);
-    debugPrint('📝 Change in ${bloc.runtimeType}: $change');
+    debugPrint('Change in ${bloc.runtimeType}: $change');
   }
 }
 

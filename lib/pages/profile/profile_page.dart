@@ -211,103 +211,166 @@ class _ProfileViewState extends State<ProfileView> {
         ? 'Joined ${_getFormattedDate(_userProfile!.createdAt!)}'
         : 'Joined ${state.joinDate}';
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        // Avatar with verification badge
-        Stack(
-          children: [
-            // Profile Image
-            Container(
-              width: ResponsiveUtils.getResponsiveFontSize(context, 110),
-              height: ResponsiveUtils.getResponsiveFontSize(context, 110),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: theme.colorScheme.outline,
-                  width: 2,
+    if (profession.toLowerCase() == "lawyer") {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // Avatar with verification badge
+          Stack(
+            children: [
+              // Profile Image
+              Container(
+                width: ResponsiveUtils.getResponsiveFontSize(context, 110),
+                height: ResponsiveUtils.getResponsiveFontSize(context, 110),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: theme.colorScheme.outline,
+                    width: 2,
+                  ),
+                ),
+                child: ClipOval(
+                  child: Image.asset(
+                    'assets/images/profile_picture_image.png',
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: theme.colorScheme.surfaceVariant,
+                        child: Icon(
+                          Icons.person,
+                          color: theme.colorScheme.onSurfaceVariant,
+                          size: ResponsiveUtils.getResponsiveFontSize(
+                              context, 40),
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ),
-              child: ClipOval(
-                child: Image.asset(
-                  'assets/images/profile_picture_image.png',
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      color: theme.colorScheme.surfaceVariant,
-                      child: Icon(
-                        Icons.person,
-                        color: theme.colorScheme.onSurfaceVariant,
-                        size:
-                            ResponsiveUtils.getResponsiveFontSize(context, 40),
-                      ),
-                    );
-                  },
+                Positioned(
+                  right: 0,
+                  top: 0,
+                  child: Image.asset(
+                    'assets/images/verified_badge_image.png',
+                    width: ResponsiveUtils.getResponsiveFontSize(context, 32),
+                    height: ResponsiveUtils.getResponsiveFontSize(context, 32),
+                  ),
                 ),
-              ),
-            ),
-
-            // ✅ Custom Verified Badge (ONLY for lawyers)
-            if (profession.toLowerCase() == "lawyer")
-              Positioned(
-                right: 0,
-                top: 0,
-                child: Image.asset(
-                  'assets/images/verified_badge_image.png',
-                  width: ResponsiveUtils.getResponsiveFontSize(context, 32),
-                  height: ResponsiveUtils.getResponsiveFontSize(context, 32),
-                ),
-              ),
-          ],
-        ),
-
-        SizedBox(
-          height: ResponsiveUtils.getResponsiveSpacing(context, 8),
-        ),
-        Text(
-          joinText,
-          style: TextStyle(
-            fontSize: ResponsiveUtils.getResponsiveFontSize(context, 12),
-            color: theme.colorScheme.onBackground.withOpacity(0.7),
+            ],
           ),
-        ),
-        SizedBox(
-          height: ResponsiveUtils.getResponsiveSpacing(context, 8),
-        ),
-        Text(
-          name,
-          style: TextStyle(
-            fontSize: ResponsiveUtils.getResponsiveFontSize(context, 22),
-            fontWeight: FontWeight.w700,
-            color: theme.colorScheme.onBackground,
+
+          SizedBox(
+            height: ResponsiveUtils.getResponsiveSpacing(context, 8),
           ),
-          textAlign: TextAlign.center,
-        ),
-        SizedBox(
-          height: ResponsiveUtils.getResponsiveSpacing(context, 4),
-        ),
-        // If lawyer → show special subtitle
-        if (profession.toLowerCase() == "lawyer")
           Text(
-            "Qualified Advocate by Bar Council of India.",
+            joinText,
             style: TextStyle(
-              fontSize: ResponsiveUtils.getResponsiveFontSize(context, 14),
-              color: theme.colorScheme.onBackground.withOpacity(0.8),
-              fontWeight: FontWeight.bold,
+              fontSize: ResponsiveUtils.getResponsiveFontSize(context, 12),
+              color: theme.colorScheme.onBackground.withOpacity(0.7),
+            ),
+          ),
+          SizedBox(
+            height: ResponsiveUtils.getResponsiveSpacing(context, 8),
+          ),
+          Text(
+            name,
+            style: TextStyle(
+              fontSize: ResponsiveUtils.getResponsiveFontSize(context, 22),
+              fontWeight: FontWeight.w700,
+              color: theme.colorScheme.onBackground,
             ),
             textAlign: TextAlign.center,
+          ),
+          SizedBox(
+            height: ResponsiveUtils.getResponsiveSpacing(context, 4),
+          ),
+            Text(
+              "Qualified Advocate by Bar Council of India.",
+              style: TextStyle(
+                fontSize: ResponsiveUtils.getResponsiveFontSize(context, 14),
+                color: theme.colorScheme.onBackground.withOpacity(0.8),
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            )
+        ],
+      );
+    } else {
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+              Column(
+                children: [
+                  Container(
+                width: ResponsiveUtils.getResponsiveFontSize(context, 110),
+                height: ResponsiveUtils.getResponsiveFontSize(context, 110),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: theme.colorScheme.outline,
+                    width: 2,
+                  ),
+                ),
+                child: ClipOval(
+                  child: Image.asset(
+                    'assets/images/profile_picture_image.png',
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: theme.colorScheme.surfaceVariant,
+                        child: Icon(
+                          Icons.person,
+                          color: theme.colorScheme.onSurfaceVariant,
+                          size: ResponsiveUtils.getResponsiveFontSize(
+                              context, 40),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+              SizedBox(
+                height: ResponsiveUtils.getResponsiveSpacing(context, 8),
+              ),
+              Text(
+                joinText,
+                style: TextStyle(
+                  fontSize: ResponsiveUtils.getResponsiveFontSize(context, 12),
+                  color: theme.colorScheme.onBackground.withOpacity(0.7),
+                ),
+              ),
+                ],
+              ),
+           
+
+          SizedBox(
+            width: ResponsiveUtils.getResponsiveSpacing(context, 20),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [      
+              Text(
+                name,
+                style: TextStyle(
+                  fontSize: ResponsiveUtils.getResponsiveFontSize(context, 22),
+                  fontWeight: FontWeight.w700,
+                  color: theme.colorScheme.onBackground,
+                ),
+              ),
+              
+              Text(
+                profession,
+                style: TextStyle(
+                  fontSize: ResponsiveUtils.getResponsiveFontSize(context, 14),
+                  color: theme.colorScheme.onBackground.withOpacity(0.9),
+                ),
+              ),      
+            
+            ],
           )
-        else
-          Text(
-            profession,
-            style: TextStyle(
-              fontSize: ResponsiveUtils.getResponsiveFontSize(context, 14),
-              color: theme.colorScheme.onBackground.withOpacity(0.9),
-            ),
-            textAlign: TextAlign.center,
-          ),
-      ],
-    );
+        ],
+      );
+    }
   }
 
   Widget _buildPrimaryActions(BuildContext context, ProfileState state) {
@@ -393,8 +456,9 @@ class _ProfileViewState extends State<ProfileView> {
             unselectedLabelColor:
                 theme.colorScheme.onBackground.withOpacity(0.6),
             indicatorColor: theme.colorScheme.onBackground,
+            labelStyle:TextStyle(fontSize: 14,),
             tabs: const [
-              Tab(text: 'Posts'),
+              Tab(text: 'Posts',),
               Tab(text: 'About'),
               Tab(text: 'Analytics'),
             ],
