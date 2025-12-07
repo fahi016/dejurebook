@@ -127,19 +127,15 @@ class _ChatInputState extends State<ChatInput> {
                           width: 36,
                           height: 36,
                           decoration: BoxDecoration(
-                            color: widget.controller.text.trim().isNotEmpty
-                                ? Theme.of(context).colorScheme.primary
-                                : Theme.of(context).colorScheme.outline,
+                            color: Theme.of(context).colorScheme.outline,
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
                             Icons.arrow_upward_rounded,
-                            color: widget.controller.text.trim().isNotEmpty
-                                ? Theme.of(context).colorScheme.onPrimary
-                                : Theme.of(context)
-                                    .colorScheme
-                                    .onSurface
-                                    .withOpacity(0.4),
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withOpacity(0.4),
                             size: 20,
                           ),
                         ),
