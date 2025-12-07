@@ -6,7 +6,6 @@ import 'package:dejurebook/pages/consumer/bloc/consumer_bloc.dart';
 import 'package:dejurebook/pages/consumer/bloc/consumer_event.dart';
 import 'package:dejurebook/pages/consumer/bloc/consumer_state.dart';
 import 'package:video_player/video_player.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
 class ReelsPage extends StatelessWidget {
   final int initialIndex;
@@ -65,9 +64,18 @@ class _ReelsPageViewState extends State<ReelsPageView> {
   }
 
   void _preloadVideos(List<ReelItem> reels, int currentIndex) {
-    // Preload current and next 1 video (limit concurrent work)
-    for (int i = currentIndex; i < currentIndex + 2 && i < reels.length; i++) {
-      if (!_videoControllers.containsKey(i) && !_initializing.contains(i)) {
+    // Preload current, next, and previous video for smoother scrolling
+    final indicesToLoad = [
+      currentIndex,
+      if (currentIndex + 1 < reels.length) currentIndex + 1,
+      if (currentIndex > 0) currentIndex - 1,
+    ];
+
+    for (final i in indicesToLoad) {
+      if (i >= 0 && 
+          i < reels.length && 
+          !_videoControllers.containsKey(i) && 
+          !_initializing.contains(i)) {
         _initializeVideo(i, reels[i].videoUrl);
       }
     }
@@ -86,18 +94,23 @@ class _ReelsPageViewState extends State<ReelsPageView> {
   Future<void> _initializeVideo(int index, String url) async {
     try {
       _initializing.add(index);
-      // Cache video file before initializing player for better performance
-      final file = await DefaultCacheManager().getSingleFile(url);
-
-      final controller = VideoPlayerController.file(
-        file,
+      
+      // Use network player directly for faster loading (Cloudinary handles streaming)
+      final controller = VideoPlayerController.networkUrl(
+        Uri.parse(url),
         videoPlayerOptions: VideoPlayerOptions(
           mixWithOthers: false,
           allowBackgroundPlayback: false,
         ),
       );
 
-      await controller.initialize();
+      // Initialize with timeout
+      await controller.initialize().timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          throw Exception('Video initialization timeout');
+        },
+      );
 
       if (!mounted) {
         controller.dispose();
@@ -116,6 +129,8 @@ class _ReelsPageViewState extends State<ReelsPageView> {
       }
     } catch (e) {
       debugPrint('Error initializing video at index $index: $e');
+      // Remove from initializing set even on error
+      if (mounted) setState(() {});
     } finally {
       _initializing.remove(index);
     }
@@ -146,7 +161,8 @@ class _ReelsPageViewState extends State<ReelsPageView> {
   Widget build(BuildContext context) {
     return BlocBuilder<ConsumerBloc, ConsumerState>(
       builder: (context, state) {
-        if (state.reels.isEmpty) {
+        // Show loading state
+        if (state.isLoading && state.reels.isEmpty) {
           return const Scaffold(
             backgroundColor: AppColors.black,
             body: Center(
@@ -157,8 +173,35 @@ class _ReelsPageViewState extends State<ReelsPageView> {
           );
         }
 
+        // Show empty state
+        if (state.reels.isEmpty && !state.isLoading) {
+          return Scaffold(
+            backgroundColor: AppColors.black,
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.video_library_outlined,
+                    color: AppColors.white.withOpacity(0.5),
+                    size: ResponsiveUtils.getResponsiveFontSize(context, 64),
+                  ),
+                  SizedBox(height: ResponsiveUtils.getResponsiveSpacing(context, 16)),
+                  Text(
+                    'No videos available',
+                    style: TextStyle(
+                      color: AppColors.white.withOpacity(0.7),
+                      fontSize: ResponsiveUtils.getResponsiveFontSize(context, 16),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
         // Preload videos when reels are loaded
-        if (_videoControllers.isEmpty) {
+        if (state.reels.isNotEmpty && _videoControllers.isEmpty) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             _preloadVideos(state.reels, _currentIndex);
           });
@@ -166,22 +209,55 @@ class _ReelsPageViewState extends State<ReelsPageView> {
 
         return Scaffold(
           backgroundColor: AppColors.black,
-          body: PageView.builder(
-            controller: _pageController,
-            scrollDirection: Axis.vertical,
-            itemCount: state.reels.length,
-            itemBuilder: (context, index) {
-              final reel = state.reels[index];
-              final isActive = index == _currentIndex;
-              return _buildReelItem(
-                context,
-                reel,
-                index,
-                isActive: isActive,
-              );
-            },
-            onPageChanged: (index) => _handlePageChange(index, state.reels),
-          ),
+          body: state.error != null
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.error_outline,
+                        color: AppColors.white.withOpacity(0.7),
+                        size: ResponsiveUtils.getResponsiveFontSize(context, 64),
+                      ),
+                      SizedBox(height: ResponsiveUtils.getResponsiveSpacing(context, 16)),
+                      Text(
+                        state.error!,
+                        style: TextStyle(
+                          color: AppColors.white.withOpacity(0.7),
+                          fontSize: ResponsiveUtils.getResponsiveFontSize(context, 16),
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      SizedBox(height: ResponsiveUtils.getResponsiveSpacing(context, 24)),
+                      ElevatedButton(
+                        onPressed: () {
+                          context.read<ConsumerBloc>().add(const LoadReelsDataEvent(forceReload: true));
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.white,
+                          foregroundColor: AppColors.black,
+                        ),
+                        child: Text('Retry'),
+                      ),
+                    ],
+                  ),
+                )
+              : PageView.builder(
+                  controller: _pageController,
+                  scrollDirection: Axis.vertical,
+                  itemCount: state.reels.length,
+                  itemBuilder: (context, index) {
+                    final reel = state.reels[index];
+                    final isActive = index == _currentIndex;
+                    return _buildReelItem(
+                      context,
+                      reel,
+                      index,
+                      isActive: isActive,
+                    );
+                  },
+                  onPageChanged: (index) => _handlePageChange(index, state.reels),
+                ),
         );
       },
     );
@@ -419,19 +495,83 @@ class _ReelsPageViewState extends State<ReelsPageView> {
     required bool play,
   }) {
     final videoController = _videoControllers[index];
+    final isInitializing = _initializing.contains(index);
 
+    // Show loading state
     if (videoController == null || !videoController.value.isInitialized) {
-      return Center(
-        child: CircularProgressIndicator(
-          color: AppColors.white,
+      return Container(
+        color: AppColors.black,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(
+                color: AppColors.white,
+                strokeWidth: 3,
+              ),
+              if (isInitializing) ...[
+                SizedBox(height: ResponsiveUtils.getResponsiveSpacing(context, 16)),
+                Text(
+                  'Loading video...',
+                  style: TextStyle(
+                    color: AppColors.white.withOpacity(0.7),
+                    fontSize: ResponsiveUtils.getResponsiveFontSize(context, 14),
+                  ),
+                ),
+              ],
+            ],
+          ),
         ),
       );
     }
 
-    return Center(
-      child: AspectRatio(
-        aspectRatio: videoController.value.aspectRatio,
-        child: VideoPlayer(videoController),
+    // Show error state if video failed to load
+    if (videoController.value.hasError) {
+      return Container(
+        color: AppColors.black,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.error_outline,
+                color: AppColors.white.withOpacity(0.5),
+                size: ResponsiveUtils.getResponsiveFontSize(context, 48),
+              ),
+              SizedBox(height: ResponsiveUtils.getResponsiveSpacing(context, 16)),
+              Text(
+                'Failed to load video',
+                style: TextStyle(
+                  color: AppColors.white.withOpacity(0.7),
+                  fontSize: ResponsiveUtils.getResponsiveFontSize(context, 14),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Get video aspect ratio, default to 9:16 (vertical video)
+    final aspectRatio = videoController.value.aspectRatio > 0 
+        ? videoController.value.aspectRatio 
+        : 9 / 16;
+
+    return Container(
+      color: AppColors.black,
+      width: double.infinity,
+      height: double.infinity,
+      child: FittedBox(
+        fit: BoxFit.cover,
+        child: SizedBox(
+          width: videoController.value.size.width > 0 
+              ? videoController.value.size.width 
+              : MediaQuery.of(context).size.width,
+          height: videoController.value.size.height > 0 
+              ? videoController.value.size.height 
+              : MediaQuery.of(context).size.height,
+          child: VideoPlayer(videoController),
+        ),
       ),
     );
   }

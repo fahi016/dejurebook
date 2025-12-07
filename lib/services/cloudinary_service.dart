@@ -222,21 +222,25 @@ class CloudinaryService {
     }
   }
 
-  /// Build optimized video URL for mobile playback
+  /// Build optimized video URL for mobile playback with streaming optimizations
   static String _buildOptimizedVideoUrl(String cloudName, String publicId) {
-    // Remove any existing file extension
-    final cleanId = publicId.replaceAll(RegExp(r'\.(mp4|mov|avi)$'), '');
+    // Remove any existing file extension and folder prefix if present
+    String cleanId = publicId.replaceAll(RegExp(r'\.(mp4|mov|avi|webm)$'), '');
+    // Remove 'reels/' prefix if present
+    if (cleanId.startsWith('reels/')) {
+      cleanId = cleanId.substring(6);
+    }
     
-    // Optimized transformations for smooth mobile playback
+    // Optimized transformations for fast streaming and smooth playback
     final transformations = [
-      'f_mp4', // Force MP4 format
-      'q_auto:good', // Good quality with auto optimization
-      'vc_h264', // H.264 codec
-      'br_1m', // 1Mbps bitrate
-      'so_0', // Start from beginning
+      'f_mp4', // Force MP4 format for universal compatibility
+      'q_auto:low', // Lower quality for faster streaming (can be adjusted)
+      'vc_h264', // H.264 codec for best compatibility
+      'ac_codec:aac', // AAC audio codec
+      'streaming_profile:auto', // Enable streaming profile
     ].join(',');
 
-    return 'https://res.cloudinary.com/$cloudName/video/upload/$transformations/$cleanId.mp4';
+    return 'https://res.cloudinary.com/$cloudName/video/upload/$transformations/$cleanId';
   }
 
   /// Checks minimal configuration (no secrets on client)

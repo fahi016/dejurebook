@@ -179,7 +179,7 @@ class _AiChatPageState extends State<AiChatPage> {
                                     ),
                                     const SizedBox(width: 8),
                                     Text(
-                                      'AI is typing...',
+                                      'AI is thinking...',
                                       style: TextStyle(
                                         fontSize: 14,
                                         color: Theme.of(context)

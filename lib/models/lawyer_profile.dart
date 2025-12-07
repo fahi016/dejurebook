@@ -99,6 +99,7 @@ class LawyerProfile extends Equatable {
     required this.availability,
     required this.applicationFee,
     this.documentUrl,
+    this.isVerified = false,
     this.createdAt,
     this.updatedAt,
   });
@@ -115,6 +116,7 @@ class LawyerProfile extends Equatable {
   final Map<LawyerWeekday, List<LawyerAvailabilitySlot>> availability;
   final double applicationFee;
   final String? documentUrl;
+  final bool isVerified;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -131,6 +133,7 @@ class LawyerProfile extends Equatable {
     Map<LawyerWeekday, List<LawyerAvailabilitySlot>>? availability,
     double? applicationFee,
     String? documentUrl,
+    bool? isVerified,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -147,6 +150,7 @@ class LawyerProfile extends Equatable {
       availability: availability ?? this.availability,
       applicationFee: applicationFee ?? this.applicationFee,
       documentUrl: documentUrl ?? this.documentUrl,
+      isVerified: isVerified ?? this.isVerified,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -169,6 +173,7 @@ class LawyerProfile extends Equatable {
           )),
       'application_fee': applicationFee,
       'document_url': documentUrl,
+      'is_verified': isVerified,
       'created_at': createdAt?.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
     };
@@ -206,6 +211,7 @@ class LawyerProfile extends Equatable {
                   )),
       applicationFee: (json['application_fee'] as num?)?.toDouble() ?? 0,
       documentUrl: json['document_url'] as String?,
+      isVerified: (json['is_verified'] as bool?) ?? false,
       createdAt: json['created_at'] != null
           ? DateTime.tryParse(json['created_at'] as String)
           : null,
@@ -229,6 +235,7 @@ class LawyerProfile extends Equatable {
         availability,
         applicationFee,
         documentUrl,
+        isVerified,
         createdAt,
         updatedAt,
       ];

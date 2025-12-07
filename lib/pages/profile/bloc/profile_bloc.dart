@@ -1,4 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dejurebook/services/profile_service.dart';
+import 'package:dejurebook/services/lawyer_profile_service.dart';
+import 'package:dejurebook/services/supabase_config.dart';
+import 'package:dejurebook/models/lawyer_profile.dart';
 import 'profile_event.dart';
 import 'profile_state.dart';
 
@@ -15,11 +19,61 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       LoadProfileDataEvent event, Emitter<ProfileState> emit) async {
     emit(state.copyWith(isLoading: true, error: null));
 
-    // Simulate loading profile data
-    await Future.delayed(const Duration(milliseconds: 500));
+    try {
+      // Get current user
+      final user = SupabaseConfig.client.auth.currentUser;
+      if (user == null) {
+        emit(state.copyWith(
+          isLoading: false,
+          error: 'No authenticated user',
+        ));
+        return;
+      }
 
-    if (!isClosed) {
-      emit(state.copyWith(isLoading: false));
+      // Fetch user profile
+      final userProfile = await ProfileService.getCurrentUserProfile();
+      
+      if (userProfile == null) {
+        emit(state.copyWith(
+          isLoading: false,
+          error: 'Profile not found',
+        ));
+        return;
+      }
+
+      // Format join date
+      String? joinDate;
+      if (userProfile.createdAt != null) {
+        final months = [
+          'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+          'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+        ];
+        joinDate = '${months[userProfile.createdAt!.month - 1]} ${userProfile.createdAt!.year}';
+      }
+
+      // Check if user is a lawyer and fetch lawyer profile
+      LawyerProfile? lawyerProfile;
+      if (userProfile.profession?.toLowerCase() == 'lawyer') {
+        lawyerProfile = await LawyerProfileService.fetchProfile(user.id);
+      }
+
+      if (!isClosed) {
+        emit(state.copyWith(
+          isLoading: false,
+          userProfile: userProfile,
+          lawyerProfile: lawyerProfile,
+          name: userProfile.fullName,
+          profession: userProfile.profession,
+          joinDate: joinDate,
+        ));
+      }
+    } catch (e) {
+      if (!isClosed) {
+        emit(state.copyWith(
+          isLoading: false,
+          error: 'Failed to load profile: $e',
+        ));
+      }
     }
   }
 

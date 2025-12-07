@@ -7,8 +7,6 @@ import 'package:dejurebook/pages/profile/bloc/profile_state.dart';
 import 'package:dejurebook/pages/settings/settings_screen.dart';
 import 'package:dejurebook/pages/followers/followers_page.dart';
 import 'package:dejurebook/pages/messages/message_screen.dart';
-import 'package:dejurebook/services/profile_service.dart';
-import 'package:dejurebook/models/user_profile.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -30,26 +28,6 @@ class ProfileView extends StatefulWidget {
 }
 
 class _ProfileViewState extends State<ProfileView> {
-  UserProfile? _userProfile;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadUserProfile();
-  }
-
-  Future<void> _loadUserProfile() async {
-    try {
-      final profile = await ProfileService.getCurrentUserProfile();
-      debugPrint(
-          'Profile loaded: ${profile?.fullName}, ${profile?.profession}');
-      setState(() {
-        _userProfile = profile;
-      });
-    } catch (e) {
-      debugPrint('Error loading profile: $e');
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -123,8 +101,47 @@ class _ProfileViewState extends State<ProfileView> {
   }
 
   Widget _buildBody(BuildContext context, ProfileState state) {
-    final profession =
-        (_userProfile?.profession ?? state.profession).toLowerCase();
+    // Show loading indicator while fetching profile
+    if (state.isLoading) {
+      return Center(
+        child: CircularProgressIndicator(
+          color: Theme.of(context).colorScheme.primary,
+        ),
+      );
+    }
+
+    // Show error if any
+    if (state.error != null) {
+      return Center(
+        child: Padding(
+          padding: ResponsiveUtils.getResponsivePadding(context),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Error loading profile',
+                style: TextStyle(
+                  fontSize: ResponsiveUtils.getResponsiveFontSize(context, 16),
+                  color: Theme.of(context).colorScheme.error,
+                ),
+              ),
+              SizedBox(height: ResponsiveUtils.getResponsiveSpacing(context, 8)),
+              Text(
+                state.error!,
+                style: TextStyle(
+                  fontSize: ResponsiveUtils.getResponsiveFontSize(context, 14),
+                  color: Theme.of(context).colorScheme.onBackground.withOpacity(0.7),
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final profession = (state.userProfile?.profession ?? state.profession ?? '')
+        .toLowerCase();
 
     return DefaultTabController(
       length: 3,
@@ -205,17 +222,22 @@ class _ProfileViewState extends State<ProfileView> {
 
   Widget _buildProfileHeader(BuildContext context, ProfileState state) {
     final theme = Theme.of(context);
-    final name = _userProfile?.fullName ?? state.name;
-    final profession = _userProfile?.profession ?? state.profession;
-    final joinText = _userProfile?.createdAt != null
-        ? 'Joined ${_getFormattedDate(_userProfile!.createdAt!)}'
-        : 'Joined ${state.joinDate}';
+    final name = state.userProfile?.fullName ?? state.name ?? '';
+    final profession = state.userProfile?.profession ?? state.profession ?? '';
+    final joinText = state.userProfile?.createdAt != null
+        ? 'Joined ${_getFormattedDate(state.userProfile!.createdAt!)}'
+        : state.joinDate != null
+            ? 'Joined ${state.joinDate}'
+            : '';
 
     if (profession.toLowerCase() == "lawyer") {
+      final lawyerProfile = state.lawyerProfile;
+      final isVerified = lawyerProfile?.isVerified ?? false;
+
       return Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Avatar with verification badge
+          // Avatar with verification badge (only if verified)
           Stack(
             children: [
               // Profile Image
@@ -247,6 +269,8 @@ class _ProfileViewState extends State<ProfileView> {
                   ),
                 ),
               ),
+              // Show verified badge only if verified
+              if (isVerified)
                 Positioned(
                   right: 0,
                   top: 0,
@@ -284,15 +308,18 @@ class _ProfileViewState extends State<ProfileView> {
           SizedBox(
             height: ResponsiveUtils.getResponsiveSpacing(context, 4),
           ),
-            Text(
-              "Qualified Advocate by Bar Council of India.",
-              style: TextStyle(
-                fontSize: ResponsiveUtils.getResponsiveFontSize(context, 14),
-                color: theme.colorScheme.onBackground.withOpacity(0.8),
-                fontWeight: FontWeight.bold,
-              ),
-              textAlign: TextAlign.center,
-            )
+          // Show verification text if verified, otherwise show profession
+          Text(
+            isVerified
+                ? "Qualified Advocate by Bar Council of India."
+                : profession,
+            style: TextStyle(
+              fontSize: ResponsiveUtils.getResponsiveFontSize(context, 14),
+              color: theme.colorScheme.onBackground.withOpacity(0.8),
+              fontWeight: isVerified ? FontWeight.bold : FontWeight.normal,
+            ),
+            textAlign: TextAlign.center,
+          )
         ],
       );
     } else {
@@ -374,8 +401,8 @@ class _ProfileViewState extends State<ProfileView> {
   }
 
   Widget _buildPrimaryActions(BuildContext context, ProfileState state) {
-    final profession =
-        (_userProfile?.profession ?? state.profession).toLowerCase();
+    final profession = (state.userProfile?.profession ?? state.profession ?? '')
+        .toLowerCase();
 
     return Column(
       children: [
@@ -523,29 +550,40 @@ class _ProfileViewState extends State<ProfileView> {
 
   Widget _buildAboutTab(BuildContext context) {
     final theme = Theme.of(context);
+    final state = context.watch<ProfileBloc>().state;
+    final lawyerProfile = state.lawyerProfile;
+
     return SingleChildScrollView(
       padding: ResponsiveUtils.getResponsivePadding(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Education',
-            style: TextStyle(
-              fontSize: ResponsiveUtils.getResponsiveFontSize(context, 16),
-              fontWeight: FontWeight.w600,
-              color: theme.colorScheme.onBackground,
+          // Education Section
+          if (lawyerProfile?.education != null && lawyerProfile!.education.isNotEmpty) ...[
+            Text(
+              'Education',
+              style: TextStyle(
+                fontSize: ResponsiveUtils.getResponsiveFontSize(context, 16),
+                fontWeight: FontWeight.w600,
+                color: theme.colorScheme.onBackground,
+              ),
             ),
-          ),
-          SizedBox(
-            height: ResponsiveUtils.getResponsiveSpacing(context, 8),
-          ),
-          _buildAboutItem(context, 'Secondary Education'),
-          _buildAboutItem(context, 'Higher Secondary'),
-          _buildAboutItem(context, 'Undergraduation'),
-          _buildAboutItem(context, 'Masters'),
-          SizedBox(
-            height: ResponsiveUtils.getResponsiveSpacing(context, 24),
-          ),
+            SizedBox(
+              height: ResponsiveUtils.getResponsiveSpacing(context, 8),
+            ),
+            Text(
+              lawyerProfile.education,
+              style: TextStyle(
+                fontSize: ResponsiveUtils.getResponsiveFontSize(context, 14),
+                color: theme.colorScheme.onBackground.withOpacity(0.9),
+              ),
+            ),
+            SizedBox(
+              height: ResponsiveUtils.getResponsiveSpacing(context, 24),
+            ),
+          ],
+
+          // Experience Section
           Text(
             'Experience',
             style: TextStyle(
@@ -557,33 +595,141 @@ class _ProfileViewState extends State<ProfileView> {
           SizedBox(
             height: ResponsiveUtils.getResponsiveSpacing(context, 8),
           ),
-          Text(
-            'Add your experience to showcase your journey.',
-            style: TextStyle(
-              fontSize: ResponsiveUtils.getResponsiveFontSize(context, 14),
-              color: theme.colorScheme.onBackground.withOpacity(0.7),
+          if (lawyerProfile?.experienceYears != null && lawyerProfile!.experienceYears > 0)
+            Text(
+              '${lawyerProfile.experienceYears} ${lawyerProfile.experienceYears == 1 ? 'year' : 'years'} of experience',
+              style: TextStyle(
+                fontSize: ResponsiveUtils.getResponsiveFontSize(context, 14),
+                color: theme.colorScheme.onBackground.withOpacity(0.9),
+              ),
+            )
+          else
+            Text(
+              'No experience information available.',
+              style: TextStyle(
+                fontSize: ResponsiveUtils.getResponsiveFontSize(context, 14),
+                color: theme.colorScheme.onBackground.withOpacity(0.7),
+              ),
             ),
-          ),
+
+          // Practice Areas Section
+          if (lawyerProfile?.practiceAreas != null && lawyerProfile!.practiceAreas.isNotEmpty) ...[
+            SizedBox(
+              height: ResponsiveUtils.getResponsiveSpacing(context, 24),
+            ),
+            Text(
+              'Practice Areas',
+              style: TextStyle(
+                fontSize: ResponsiveUtils.getResponsiveFontSize(context, 16),
+                fontWeight: FontWeight.w600,
+                color: theme.colorScheme.onBackground,
+              ),
+            ),
+            SizedBox(
+              height: ResponsiveUtils.getResponsiveSpacing(context, 8),
+            ),
+            Wrap(
+              spacing: ResponsiveUtils.getResponsiveSpacing(context, 8),
+              runSpacing: ResponsiveUtils.getResponsiveSpacing(context, 8),
+              children: lawyerProfile.practiceAreas.map((area) {
+                return Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: ResponsiveUtils.getResponsiveSpacing(context, 12),
+                    vertical: ResponsiveUtils.getResponsiveSpacing(context, 6),
+                  ),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(
+                      ResponsiveUtils.getResponsiveSpacing(context, 8),
+                    ),
+                  ),
+                  child: Text(
+                    area.label,
+                    style: TextStyle(
+                      fontSize: ResponsiveUtils.getResponsiveFontSize(context, 12),
+                      color: theme.colorScheme.onPrimaryContainer,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
+
+          // Languages Section
+          if (lawyerProfile?.languages != null && lawyerProfile!.languages.isNotEmpty) ...[
+            SizedBox(
+              height: ResponsiveUtils.getResponsiveSpacing(context, 24),
+            ),
+            Text(
+              'Languages',
+              style: TextStyle(
+                fontSize: ResponsiveUtils.getResponsiveFontSize(context, 16),
+                fontWeight: FontWeight.w600,
+                color: theme.colorScheme.onBackground,
+              ),
+            ),
+            SizedBox(
+              height: ResponsiveUtils.getResponsiveSpacing(context, 8),
+            ),
+            Wrap(
+              spacing: ResponsiveUtils.getResponsiveSpacing(context, 8),
+              runSpacing: ResponsiveUtils.getResponsiveSpacing(context, 8),
+              children: lawyerProfile.languages.map((language) {
+                return Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: ResponsiveUtils.getResponsiveSpacing(context, 12),
+                    vertical: ResponsiveUtils.getResponsiveSpacing(context, 6),
+                  ),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.secondaryContainer,
+                    borderRadius: BorderRadius.circular(
+                      ResponsiveUtils.getResponsiveSpacing(context, 8),
+                    ),
+                  ),
+                  child: Text(
+                    language,
+                    style: TextStyle(
+                      fontSize: ResponsiveUtils.getResponsiveFontSize(context, 12),
+                      color: theme.colorScheme.onSecondaryContainer,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
+
+          // LinkedIn Section
+          if (lawyerProfile?.linkedinUrl != null && lawyerProfile!.linkedinUrl.isNotEmpty) ...[
+            SizedBox(
+              height: ResponsiveUtils.getResponsiveSpacing(context, 24),
+            ),
+            Text(
+              'LinkedIn',
+              style: TextStyle(
+                fontSize: ResponsiveUtils.getResponsiveFontSize(context, 16),
+                fontWeight: FontWeight.w600,
+                color: theme.colorScheme.onBackground,
+              ),
+            ),
+            SizedBox(
+              height: ResponsiveUtils.getResponsiveSpacing(context, 8),
+            ),
+            Text(
+              lawyerProfile.linkedinUrl,
+              style: TextStyle(
+                fontSize: ResponsiveUtils.getResponsiveFontSize(context, 14),
+                color: theme.colorScheme.primary,
+                decoration: TextDecoration.underline,
+              ),
+            ),
+          ],
         ],
       ),
     );
   }
 
-  Widget _buildAboutItem(BuildContext context, String label) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: EdgeInsets.only(
-        bottom: ResponsiveUtils.getResponsiveSpacing(context, 4),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: ResponsiveUtils.getResponsiveFontSize(context, 14),
-          color: theme.colorScheme.onBackground.withOpacity(0.9),
-        ),
-      ),
-    );
-  }
 
   String _getFormattedDate(DateTime date) {
     final months = [
