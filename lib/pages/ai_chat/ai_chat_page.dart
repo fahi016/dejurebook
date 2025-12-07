@@ -208,6 +208,37 @@ class _AiChatPageState extends State<AiChatPage> {
           }
 
           if (state is AiChatLoaded) {
+            // Show empty state if no messages
+            if (state.messages.isEmpty && !state.isTyping) {
+              return Column(
+                children: [
+                  Expanded(
+                    child: Center(
+                      child: Text(
+                        'Ask your legal query!',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Theme.of(context).colorScheme.onBackground,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Chat input
+                  ChatInput(
+                    controller: _textController,
+                    onSend: _sendMessage,
+                    isListening: state.isListening,
+                    onToggleListening: () {
+                      context
+                          .read<AiChatBloc>()
+                          .add(const ToggleListeningEvent());
+                    },
+                  ),
+                ],
+              );
+            }
+
             return Column(
               children: [
                 // Chat messages

@@ -49,7 +49,7 @@ class _ChatInputState extends State<ChatInput> {
                   maxHeight: 120,
                 ),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceVariant,
+                  color: const Color(0xFF3E3E3E),
                   borderRadius: BorderRadius.circular(24),
                 ),
                 child: Row(
@@ -62,33 +62,33 @@ class _ChatInputState extends State<ChatInput> {
                           setState(() {});
                         },
                         decoration: InputDecoration(
+                          fillColor: const Color(0xFF3E3E3E),
+                          filled: true,
                           hintText: 'Ask anything...',
                           hintStyle: TextStyle(
                             fontSize: 15,
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurfaceVariant
-                                .withOpacity(0.6),
+                            color: Theme.of(context).colorScheme.surfaceBright,
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(24),
                             borderSide: const BorderSide(
-                              color: AppColors.borderColor, // always light grey
+                              color:
+                                  const Color(0xFF3E3E3E), // always light grey
                               width: 1.2,
                             ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(24),
                             borderSide: const BorderSide(
-                              color: AppColors
-                                  .borderColor, // same color even when focused
+                              color: const Color(
+                                  0xFF3E3E3E), // same color even when focused
                               width: 1.4,
                             ),
                           ),
                           disabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(24),
                             borderSide: const BorderSide(
-                              color: AppColors.borderColor,
+                              color: const Color(0xFF3E3E3E),
                               width: 1.0,
                             ),
                           ),
@@ -106,7 +106,7 @@ class _ChatInputState extends State<ChatInput> {
                         ),
                         style: TextStyle(
                           fontSize: 15,
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          color: Theme.of(context).colorScheme.onPrimary,
                         ),
                         maxLines: 5,
                         minLines: 1,

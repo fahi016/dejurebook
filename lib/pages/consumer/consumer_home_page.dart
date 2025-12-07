@@ -113,7 +113,6 @@ class ConsumerHomeView extends StatelessWidget {
                   style: TextStyle(
                     color: AppColors.brandGreen,
                     fontSize: ResponsiveUtils.getResponsiveFontSize(context, 14),
-                    fontWeight: FontWeight.w800,
                   ),
                 ),
               ),
