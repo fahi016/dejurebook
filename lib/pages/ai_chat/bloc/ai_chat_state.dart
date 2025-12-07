@@ -47,3 +47,12 @@ class AiChatError extends AiChatState {
   @override
   List<Object?> get props => [message];
 }
+
+class AiChatHistoryLoaded extends AiChatState {
+  final List<AiChatSession> sessions;
+
+  const AiChatHistoryLoaded({required this.sessions});
+
+  @override
+  List<Object?> get props => [sessions];
+}

@@ -63,3 +63,20 @@ class ShowSourcesEvent extends AiChatEvent {
   @override
   List<Object?> get props => [messageId];
 }
+
+class LoadChatHistoryEvent extends AiChatEvent {
+  const LoadChatHistoryEvent();
+}
+
+class DeleteChatSessionEvent extends AiChatEvent {
+  final String sessionId;
+
+  const DeleteChatSessionEvent({required this.sessionId});
+
+  @override
+  List<Object?> get props => [sessionId];
+}
+
+class CreateNewChatEvent extends AiChatEvent {
+  const CreateNewChatEvent();
+}

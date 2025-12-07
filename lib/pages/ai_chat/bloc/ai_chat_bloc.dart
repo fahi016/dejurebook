@@ -1,10 +1,15 @@
+import 'package:flutter/foundation.dart';
 import 'package:dejurebook/services/gemini_service.dart';
+import 'package:dejurebook/services/ai_chat_service.dart';
+import 'package:dejurebook/services/supabase_config.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dejurebook/models/ai_chat_model.dart';
 import 'package:dejurebook/pages/ai_chat/bloc/ai_chat_event.dart';
 import 'package:dejurebook/pages/ai_chat/bloc/ai_chat_state.dart';
 
 class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
+  String? _currentSessionId;
+
   AiChatBloc() : super(AiChatInitial()) {
     on<LoadAiChatEvent>(_onLoadAiChat);
     on<SendMessageEvent>(_onSendMessage);
@@ -12,38 +17,81 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     on<ClearChatEvent>(_onClearChat);
     on<ToggleListeningEvent>(_onToggleListening);
     on<ShowSourcesEvent>(_onShowSources);
+    on<LoadChatHistoryEvent>(_onLoadChatHistory);
+    on<DeleteChatSessionEvent>(_onDeleteChatSession);
+    on<CreateNewChatEvent>(_onCreateNewChat);
   }
 
-  void _onLoadAiChat(LoadAiChatEvent event, Emitter<AiChatState> emit) {
+  Future<void> _onLoadAiChat(
+      LoadAiChatEvent event, Emitter<AiChatState> emit) async {
     emit(AiChatLoading());
 
-    // Simulate loading initial messages
-    final initialMessages = [
-      AiChatMessage(
-        id: '1',
-        content: 'My boss just harassed me. Is this illegal?',
-        isUser: true,
-        timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
-      ),
-      AiChatMessage(
-        id: '2',
-        content:
-            'Yes, workplace harassment is illegal under Indian law. You are protected by the Sexual Harassment of Women at Workplace (Prevention, Prohibition and Redressal) Act, 2013, and the Indian Penal Code in some cases.\n\nYou can:\n1. File a written complaint with your company\'s Internal Complaints Committee (ICC) — every company with more than 10 employees is required to have one.\n2. If no ICC exists or you don\'t feel safe, you can approach the Local Complaints Committee (LCC) in your district.\n3. You may also file a police complaint if the harassment is severe.\n\nWould you like to learn the step-by-step process or get connected to a legal advisor?\n\nLet me know if you want versions for:\n• Mild harassment (verbal, messages)\n• Male/female/other victims\n• Anonymous reporting or evidence-gathering advice.',
-        isUser: false,
-        timestamp: DateTime.now().subtract(const Duration(minutes: 4)),
-        sources: 'Sexual Harassment of Women at Workplace Act, 2013',
-        suggestedActions: ['What can i do?'],
-      ),
-    ];
+    try {
+      // If sessionId is empty, create a new session
+      if (event.sessionId.isEmpty) {
+        final user = SupabaseConfig.client.auth.currentUser;
+        if (user == null) {
+          emit(AiChatError(message: 'User not authenticated'));
+          return;
+        }
 
-    emit(AiChatLoaded(messages: initialMessages));
+        final session = await AiChatService.createSession(userId: user.id);
+        _currentSessionId = session.id;
+        emit(AiChatLoaded(messages: []));
+      } else {
+        _currentSessionId = event.sessionId;
+        final session = await AiChatService.getSession(event.sessionId);
+        if (session != null) {
+          emit(AiChatLoaded(messages: session.messages));
+        } else {
+          emit(AiChatLoaded(messages: []));
+        }
+      }
+    } catch (e) {
+      emit(AiChatError(message: 'Failed to load chat: $e'));
+    }
   }
 
-  void _onSendMessage(SendMessageEvent event, Emitter<AiChatState> emit) async {
+  Future<void> _onSendMessage(
+      SendMessageEvent event, Emitter<AiChatState> emit) async {
     if (state is AiChatLoaded) {
       final currentState = state as AiChatLoaded;
+      final sessionId = event.sessionId;
 
-      // 1️⃣ Add the user's message and a placeholder AI message immediately
+      // Ensure session exists
+      if (_currentSessionId == null || _currentSessionId != sessionId) {
+        try {
+          final user = SupabaseConfig.client.auth.currentUser;
+          if (user == null) {
+            emit(AiChatError(message: 'User not authenticated'));
+            return;
+          }
+
+          final session = await AiChatService.createSession(
+            userId: user.id,
+            title: event.message.length > 30
+                ? '${event.message.substring(0, 30)}...'
+                : event.message,
+          );
+          _currentSessionId = session.id;
+        } catch (e) {
+          emit(AiChatError(message: 'Failed to create session: $e'));
+          return;
+        }
+      }
+
+      // 1️⃣ Save user message to database
+      try {
+        await AiChatService.saveMessage(
+          sessionId: _currentSessionId!,
+          content: event.message,
+          isUser: true,
+        );
+      } catch (e) {
+        debugPrint('Failed to save user message: $e');
+      }
+
+      // 2️⃣ Add the user's message and a placeholder AI message immediately
       final userMessage = AiChatMessage(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         content: event.message,
@@ -68,7 +116,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
       emit(currentState.copyWith(
           messages: messagesWithPlaceholder, isTyping: true));
 
-      // 2️⃣ Start streaming response from Gemini
+      // 3️⃣ Start streaming response from Gemini
       final geminiService = GeminiStreamService();
       String fullResponse = "";
 
@@ -95,7 +143,18 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
           messagesWithPlaceholder = updatedList;
         }
 
-        // 3️⃣ Once streaming finishes, mark typing as false
+        // 4️⃣ Save AI response to database
+        try {
+          await AiChatService.saveMessage(
+            sessionId: _currentSessionId!,
+            content: fullResponse,
+            isUser: false,
+          );
+        } catch (e) {
+          debugPrint('Failed to save AI message: $e');
+        }
+
+        // 5️⃣ Once streaming finishes, mark typing as false
         emit((state as AiChatLoaded).copyWith(isTyping: false));
       } catch (e) {
         emit(AiChatError(message: '⚠️ Failed to stream AI response: $e'));
@@ -113,8 +172,70 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     ));
   }
 
-  void _onClearChat(ClearChatEvent event, Emitter<AiChatState> emit) {
+  Future<void> _onClearChat(
+      ClearChatEvent event, Emitter<AiChatState> emit) async {
+    if (_currentSessionId != null) {
+      try {
+        await AiChatService.deleteSession(_currentSessionId!);
+        _currentSessionId = null;
+      } catch (e) {
+        debugPrint('Failed to delete session: $e');
+      }
+    }
     emit(AiChatLoaded(messages: []));
+  }
+
+  Future<void> _onLoadChatHistory(
+      LoadChatHistoryEvent event, Emitter<AiChatState> emit) async {
+    emit(AiChatLoading());
+
+    try {
+      final user = SupabaseConfig.client.auth.currentUser;
+      if (user == null) {
+        emit(AiChatError(message: 'User not authenticated'));
+        return;
+      }
+
+      final sessions = await AiChatService.getSessions(user.id);
+      emit(AiChatHistoryLoaded(sessions: sessions));
+    } catch (e) {
+      emit(AiChatError(message: 'Failed to load chat history: $e'));
+    }
+  }
+
+  Future<void> _onDeleteChatSession(
+      DeleteChatSessionEvent event, Emitter<AiChatState> emit) async {
+    try {
+      await AiChatService.deleteSession(event.sessionId);
+      
+      // Reload history if we're in history view
+      if (state is AiChatHistoryLoaded) {
+        final user = SupabaseConfig.client.auth.currentUser;
+        if (user != null) {
+          final sessions = await AiChatService.getSessions(user.id);
+          emit(AiChatHistoryLoaded(sessions: sessions));
+        }
+      }
+    } catch (e) {
+      emit(AiChatError(message: 'Failed to delete chat: $e'));
+    }
+  }
+
+  Future<void> _onCreateNewChat(
+      CreateNewChatEvent event, Emitter<AiChatState> emit) async {
+    try {
+      final user = SupabaseConfig.client.auth.currentUser;
+      if (user == null) {
+        emit(AiChatError(message: 'User not authenticated'));
+        return;
+      }
+
+      final session = await AiChatService.createSession(userId: user.id);
+      _currentSessionId = session.id;
+      emit(AiChatLoaded(messages: []));
+    } catch (e) {
+      emit(AiChatError(message: 'Failed to create new chat: $e'));
+    }
   }
 
   void _onToggleListening(
@@ -128,20 +249,5 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
   void _onShowSources(ShowSourcesEvent event, Emitter<AiChatState> emit) {
     // Handle showing sources for a specific message
     // This could navigate to a sources page or show a modal
-  }
-
-  String _generateAiResponse(String userMessage) {
-    // Simple AI response generation based on keywords
-    final message = userMessage.toLowerCase();
-
-    if (message.contains('harassment') || message.contains('harassed')) {
-      return 'Workplace harassment is a serious issue. You have several legal protections and options available. Let me help you understand your rights and the steps you can take.';
-    } else if (message.contains('rights') || message.contains('legal')) {
-      return 'Your legal rights include protection from harassment, discrimination, and unfair treatment. I can provide specific guidance based on your situation.';
-    } else if (message.contains('complaint') || message.contains('file')) {
-      return 'Filing a complaint involves several steps. I can guide you through the process, including documentation requirements and where to submit your complaint.';
-    } else {
-      return 'I understand you need legal assistance. Please provide more details about your situation so I can offer the most relevant guidance and support.';
-    }
   }
 }

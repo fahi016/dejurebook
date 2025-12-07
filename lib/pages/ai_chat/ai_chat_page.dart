@@ -6,6 +6,7 @@ import 'package:dejurebook/pages/ai_chat/bloc/ai_chat_event.dart';
 import 'package:dejurebook/pages/ai_chat/bloc/ai_chat_state.dart';
 import 'package:dejurebook/pages/ai_chat/widgets/chat_bubble.dart';
 import 'package:dejurebook/pages/ai_chat/widgets/chat_input.dart';
+import 'package:dejurebook/pages/ai_chat/ai_chat_history_page.dart';
 
 class AiChatPage extends StatefulWidget {
   final String sessionId;
@@ -63,6 +64,37 @@ class _AiChatPageState extends State<AiChatPage> {
     });
   }
 
+  void _showDeleteConfirmation(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Chat'),
+        content: const Text(
+          'Are you sure you want to delete this chat? This action cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              context.read<AiChatBloc>().add(
+                    ClearChatEvent(sessionId: widget.sessionId),
+                  );
+              Navigator.of(context).pop();
+              Navigator.of(context).pop(); // Close chat page too
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.error,
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -78,6 +110,62 @@ class _AiChatPageState extends State<AiChatPage> {
           ),
           onPressed: () => Navigator.of(context).pop(),
         ),
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.history,
+              color: Theme.of(context).colorScheme.onSurface,
+              size: 28,
+            ),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const AiChatHistoryPage(),
+                ),
+              );
+            },
+            tooltip: 'Chat History',
+          ),
+          PopupMenuButton<String>(
+            icon: Icon(
+              Icons.more_vert,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+            onSelected: (value) {
+              if (value == 'delete') {
+                _showDeleteConfirmation(context);
+              } else if (value == 'new') {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const AiChatHistoryPage(),
+                  ),
+                );
+              }
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'new',
+                child: Row(
+                  children: [
+                    Icon(Icons.add, size: 20),
+                    SizedBox(width: 8),
+                    Text('New Chat'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'delete',
+                child: Row(
+                  children: [
+                    Icon(Icons.delete, size: 20, color: Colors.red),
+                    SizedBox(width: 8),
+                    Text('Delete Chat', style: TextStyle(color: Colors.red)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
         automaticallyImplyLeading: true,
       ),
       body: BlocConsumer<AiChatBloc, AiChatState>(

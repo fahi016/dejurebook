@@ -62,7 +62,7 @@ class _ChatInputState extends State<ChatInput> {
                           setState(() {});
                         },
                         decoration: InputDecoration(
-                          hintText: 'Ask follow-up...',
+                          hintText: 'Ask anything...',
                           hintStyle: TextStyle(
                             fontSize: 15,
                             color: Theme.of(context)
