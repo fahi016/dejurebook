@@ -28,24 +28,28 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
 
     try {
       // If sessionId is empty, create a new session
-      if (event.sessionId.isEmpty) {
-        final user = SupabaseConfig.client.auth.currentUser;
-        if (user == null) {
-          emit(AiChatError(message: 'User not authenticated'));
-          return;
-        }
+      final user = SupabaseConfig.client.auth.currentUser;
+      if (user == null) {
+        emit(AiChatError(message: 'User not authenticated'));
+        return;
+      }
 
+      if (event.sessionId.isEmpty) {
         final session = await AiChatService.createSession(userId: user.id);
         _currentSessionId = session.id;
         emit(AiChatLoaded(messages: []));
+        return;
+      }
+
+      final session = await AiChatService.getSession(event.sessionId);
+      if (session != null) {
+        _currentSessionId = session.id;
+        emit(AiChatLoaded(messages: session.messages));
       } else {
-        _currentSessionId = event.sessionId;
-        final session = await AiChatService.getSession(event.sessionId);
-        if (session != null) {
-          emit(AiChatLoaded(messages: session.messages));
-        } else {
-          emit(AiChatLoaded(messages: []));
-        }
+        // Provided sessionId doesn't exist (e.g., placeholder) — create a real one
+        final newSession = await AiChatService.createSession(userId: user.id);
+        _currentSessionId = newSession.id;
+        emit(AiChatLoaded(messages: []));
       }
     } catch (e) {
       emit(AiChatError(message: 'Failed to load chat: $e'));

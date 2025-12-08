@@ -306,7 +306,7 @@ class _AwazContentState extends State<AwazContent>
                           Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (context) => const AiChatPage(
-                                sessionId: 'default_session',
+                                sessionId: '',
                               ),
                             ),
                           );
